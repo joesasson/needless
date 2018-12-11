@@ -9,9 +9,6 @@ function needless() {
   let sheet = ss.getSheets()[1];
   let sheetData = sheet.getDataRange().getValues();
 
-  // define named indexes
-  // basically I want to parse header names, and use them as the index variable name
-  // let me try to write a function that will map the names to a column name and an index number 
   let { 
     asin,
     upcEanGtin,
@@ -19,33 +16,34 @@ function needless() {
     sizeName,
     orderQuantity,
     shipStartDate
-  } = reduceHeaders(sheetData) //-> { columnName1: index1, ... } 
-  // // filter by date (maybe prompt for a date)
-  let filterDate = "04/10/2019" // Make this configurable down the road
+  } = reduceHeaders(sheetData)
   let amazonSheetData = new CommitmentPlanData(sheetData)
-  let newData = amazonSheetData.dateFilter(filterDate)
-  newData = newData.map((row, i) => {
-    let shipDate = row[shipStartDate]
-    let fnsku = row[asin]
-    let upc = row[upcEanGtin]
-    let qty = row[orderQuantity]
-    let style = row[modelNumber]
-    let size = row[sizeName]
-    size = size.replace(" M US", "")
-    let sku = style + "_" + size
-    let paddedSize = size < 10 ? 0 + size : size
-    let paddedSku = style + "_" + paddedSize
-    if(i === 0){
-      return ["Sku", "Quantity", "FNSKU", "UPC", "Ship Date", "Vendor", "PO(AVC-MMDD)", "Ex-Factory", "padded"]
-    }
-    return [sku, qty, fnsku, upc, shipDate, "", "", "", paddedSku]
-  })
+  let allMonths = amazonSheetData.getAllMonths()
+  allMonths.forEach(month => {
+    let newData: any[][] = amazonSheetData.monthFilter(month)
+    newData = newData.map((row, i) => {
+      let shipDate = row[shipStartDate]
+      let fnsku = row[asin]
+      let upc = row[upcEanGtin]
+      let qty = row[orderQuantity]
+      let style = row[modelNumber]
+      let size = row[sizeName]
+      size = size.replace(" M US", "")
+      let sku = style + "_" + size
+      let paddedSize = size < 10 ? 0 + size : size
+      let paddedSku = style + "_" + paddedSize
+      if(i === 0){
+        return ["Sku", "Quantity", "FNSKU", "UPC", "Ship Date", "Vendor", "PO(AVC-MMDD)", "Ex-Factory", "padded"]
+      }
+      return [sku, qty, fnsku, upc, shipDate, "", "", "", paddedSku]
+    })
 
-  let [headers, ...rest] = newData
-  rest.sort((a, b) => a[8].localeCompare(b[8], 'en', { numeric: true }))
-  newData = [headers, ...rest]
-  // sort by style by size
-  createNewSheetWithData(ss, newData, 'Output')
+    let [headers, ...rest] = newData
+    let { padded } = reduceHeaders(newData)
+    rest.sort((a: any[], b) => a[padded].localeCompare(b[padded], 'en', { numeric: true }))
+    newData = [headers, ...rest]
+    createNewSheetWithData(ss, newData, month)
+  }) 
 }
 
 
@@ -85,18 +83,43 @@ export const getIndexByHeader = (camelizedName, headerMap) => headerMap.find(col
 
 class CommitmentPlanData {
   data: [][]
+  content: [][]
   headers: []
-  headerNames: {}
+  headerMap: {}
 
   constructor(data){
     this.data = data
-    this.headers = data[0]
-    this.headerNames = reduceHeaders(this.data)
+    this.content = this.data.slice(1)
+    this.headers = this.data[0]
+    this.headerMap = reduceHeaders(this.data)
   }
 
+  getAllMonths(){
+    // get ship date index
+    let { shipStartDate } = reduceHeaders(this.data)
+    // map all dates into one array
+    let dates: any[] = this.content.map(row => row[shipStartDate])
+    let months = dates.reduce((uniqueMonths, date, i) => {
+      let month = date.split('/')[0]
+      if(uniqueMonths.indexOf(month) === -1){
+        return [...uniqueMonths, month]
+      }
+      return uniqueMonths
+    }, [])
+    return months
+  }
 
   dateFilter(filterDate) {
-    let { shipStartDate } = this.headerNames
+    let { shipStartDate } = reduceHeaders(this.data)
     return this.data.filter(row => row[shipStartDate] === filterDate) 
+  }
+
+  monthFilter(filterMonth){
+    let { shipStartDate } = reduceHeaders(this.data)
+    return this.data.filter(row => {
+      let date: string = row[shipStartDate]
+      let month = date.split("/")[0]
+      return month === filterMonth
+    })
   }
 }
