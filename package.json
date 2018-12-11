@@ -1,0 +1,19 @@
+{
+  "test": "jest",
+  "name": "needless",
+  "description": "[![clasp](https://img.shields.io/badge/built%20with-clasp-4285f4.svg)](https://github.com/google/clasp)",
+  "version": "1.0.0",
+  "main": "src/Needless.ts",
+  "devDependencies": {
+    "jest": "^23.6.0",
+    "@types/google-apps-script": "0.0.32",
+    "@types/jest": "^23.3.10",
+    "ts-jest": "^23.10.5",
+    "typescript": "^3.2.2"
+  },
+  "scripts": {
+    "test": "jest --watch"
+  },
+  "author": "Joe Sasson <joesasson@marcjosephnewyork.com> (joesasson.github.io)",
+  "license": "MIT"
+}
