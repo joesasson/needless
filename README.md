@@ -9,9 +9,10 @@ This script was scaffolded by yeoman [generator-clasp](https://github.com/joesas
 Visit link above for instructions on running this scaffold thorugh yeoman.
 
 
-## Objectives
+## Functions
 
-- Automate the process of turning an Amazon Commitment plan into a file suitable for upload as a Quickbooks PO
+- Turn an Amazon Commitment plan into a file suitable for upload as a Quickbooks PO
+- Turn an Amazon Commitment plan into a Sku Creation Worksheet to be pasted (or uploaded) into qb
 
 ## Steps
 

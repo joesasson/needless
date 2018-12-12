@@ -1,5 +1,7 @@
 **/**
 !src/Needless.ts
+!src/commitmentToPo.ts
+!src/commitmentToSkuSheet.ts
 !src/utils.ts
 !appsscript.json
 
