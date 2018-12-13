@@ -16,6 +16,9 @@ function commitmentToPo() {
   allMonths.forEach(month => {
     let newData: any[][] = amazonSheetData.monthFilter(month)
     newData = newData.map((row, i) => {
+      if(i === 0){
+        return ["Sku", "Quantity", "FNSKU", "UPC", "Ship Date", "Vendor", "PO(AVC-MMDD)", "Ex-Factory", "padded"]
+      }
       let shipDate = row[shipStartDate]
       let fnsku = row[asin]
       let upc = row[upcEanGtin]
@@ -26,9 +29,6 @@ function commitmentToPo() {
       let sku = style + "_" + size
       let paddedSize = size < 10 ? 0 + size : size
       let paddedSku = style + "_" + paddedSize
-      if(i === 0){
-        return ["Sku", "Quantity", "FNSKU", "UPC", "Ship Date", "Vendor", "PO(AVC-MMDD)", "Ex-Factory", "padded"]
-      }
       return [sku, qty, fnsku, upc, shipDate, "", "", "", paddedSku]
     })
 

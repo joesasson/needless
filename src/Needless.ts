@@ -63,7 +63,8 @@ class CommitmentPlanData {
 
   monthFilter(filterMonth){
     let { shipStartDate } = reduceHeaders(this.data)
-    return this.data.filter(row => {
+    return this.data.filter((row, i) => {
+      if(i === 0) return true
       let date: string = row[shipStartDate]
       let month = date.split("/")[0]
       return month === filterMonth
