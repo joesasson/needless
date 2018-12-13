@@ -2,3 +2,4 @@
 .clasp.json
 package-lock.json
 keys.ts
+private.clasp.json

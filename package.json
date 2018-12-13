@@ -1,7 +1,7 @@
 {
   "test": "jest",
   "name": "needless",
-  "description": "[![clasp](https://img.shields.io/badge/built%20with-clasp-4285f4.svg)](https://github.com/google/clasp)",
+  "description": "An addon for Google Sheets that automates needless work",
   "version": "1.0.0",
   "main": "src/Needless.ts",
   "devDependencies": {

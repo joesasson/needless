@@ -70,6 +70,20 @@ class CommitmentPlanData {
       return month === filterMonth
     })
   }
+
+  removeDuplicatesByUpc() {
+    const listOfUpcs = []
+    const { upcEanGtin: upcI } = reduceHeaders(this.data)
+    this.data = this.data.reduce((filtered: [][], row: []) => {
+      const upc = row[upcI]
+      if(listOfUpcs.indexOf(upc) > -1){
+        return filtered
+      }
+      listOfUpcs.push(upc)
+      filtered.push(row)
+      return filtered
+    }, [])
+  }
 }
 
 

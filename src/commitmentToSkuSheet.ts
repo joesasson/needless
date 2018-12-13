@@ -5,8 +5,9 @@ function commitmentToSkuSheet(){
 
   // extract all the columns that are readily available from the commitment plan
   let newData = new CommitmentPlanData(sheetData)
+  // remove duplicates
   // extracted column indices
-  let {
+  const {
     color: colorI,
     upcEanGtin: upcI,
     modelNumber: style,
@@ -14,11 +15,24 @@ function commitmentToSkuSheet(){
     modelName // same as styleName
   } = newData.headerMap
 
+  newData.removeDuplicatesByUpc()
+
   // transformations
   const makeSku = (row: []) => `${row[style]}_${row[size]}`.replace(" M US", "")
-  const extractStyleName = (row: []) => row[modelName].split(" Brazil ")[1]
-  const extractCategory = (row: []) => row[modelName].split(" " + extractStyleName(row) + " ")[1]
+  const extractStyleName = (row: [], i) => {
+    let styleName = row[modelName].split(" Brazil ")[1]
+    let formulaString = `=REPLACE("${styleName}", FIND(P${i + 1}, "${styleName}"), LEN(P${i + 1}), "")`
+    return formulaString 
+  }
+  // const extractCategory = (row: []) => row[modelName].split(" " + extractStyleName(row) + " ")[1]
   const makeSalesDescription = (row: []) => `${row[colorI]} ${extractCategory(row)}`
+  const makePaddedSku = (row: []) => {
+
+    const styleVal = row[style]
+    const sizeVal = cleanSize(row[size])
+    const paddedSize = sizeVal < 10 ? 0 + sizeVal : sizeVal
+    return `${styleVal}_${paddedSize}`
+  }
 
   // static values
   const account = "SALES"
@@ -31,31 +45,35 @@ function commitmentToSkuSheet(){
         "Color",
         "UPC",
         "Cost",
-        "Ratail",
+        "Retail",
         "Wholesale",
         "MPN",
         "Account",
+        "COGS Account",
+        "Inventory Asset",
         "Style Name",
         "Sales Description",
         "Tax",
-        "Purchase Description"
+        "Purchase Description",
+        "Padded Skus",
+        "Category"
       ]
     }
     const sku = makeSku(row)
-    const color = row[colorI]
+    const color = capitalize(row[colorI])
     const upc = row[upcI]
-    const category = extractCategory(row)
+    // const category = extractCategory(row)
     // 3 blank columns Cost, Retail, Wholesale
     // mpn == sku
     // account is constant
-    const styleName = extractStyleName(row)
-    // salesDEscription is color + category
-    const salesDescription = `${color} ${category}`
+    const styleName = extractStyleName(row, i)
+    // salesDescription is color + category
+    const salesDescription = `=B${i + 1} & " " & P${i + 1}`
     // tax is constant
     // purchase description is manual
     const size = sku.split("_")[1]
     const purchaseDescription = size === "5" ? "here" : ""
-    // const paddedSku = makePaddedSku()
+    const paddedSku = makePaddedSku(row)
 
     return [
       sku, 
@@ -66,16 +84,23 @@ function commitmentToSkuSheet(){
       "",
       sku,
       account,
+      "Cost of Goods Sold",
+      "Inventory Asset",
       styleName,
       salesDescription,
       tax,
+      purchaseDescription,
+      paddedSku,
       ""
     ]
   })
 
-  // remove duplicates
+  
   // sort by alphanumeric
 
   createNewSheetWithData(ss, newData, "Sku Worksheet")
 
 }
+
+
+

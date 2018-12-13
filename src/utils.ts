@@ -66,3 +66,5 @@ const createNewSheetWithData = (ss: GoogleAppsScript.Spreadsheet.Spreadsheet, da
 }
 
 const cleanSize = size => size.replace(" M US", "")
+
+const capitalize = string => string.split(" ").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ")
