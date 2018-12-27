@@ -4,7 +4,7 @@ function commitmentToSkuSheet(){
   let sheetData = sheet.getDataRange().getValues();
 
   // extract all the columns that are readily available from the commitment plan
-  let newData = new CommitmentPlanData(sheetData)
+  let newData = new SheetData(sheetData)
   // remove duplicates
   // extracted column indices
   const {

@@ -11,7 +11,7 @@ function commitmentToPo() {
     orderQuantity,
     shipStartDate
   } = reduceHeaders(sheetData)
-  let amazonSheetData = new CommitmentPlanData(sheetData)
+  let amazonSheetData = new SheetData(sheetData)
   let allMonths = amazonSheetData.getAllMonths()
   allMonths.forEach(month => {
     let newData: any[][] = amazonSheetData.monthFilter(month)
