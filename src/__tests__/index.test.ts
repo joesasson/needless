@@ -3,7 +3,7 @@ import {
   mapHeaders, 
   reduceHeaders, 
   camelize 
-} from '../Needless';
+} from '../utils';
 
 describe('camelize', () => {
   test('turns a regular string into camelCase', () => {
@@ -20,7 +20,7 @@ describe('camelize', () => {
     expect(camelized).toBe(expected);
   });
 
-  test('strips out special characters', () => {
+  test('strips out special characters (excluding underscore)' , () => {
     let testString = "UPC/EAN/GTIN";
     let camelized = camelize(testString);
     let expected = "upcEanGtin" ;
