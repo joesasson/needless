@@ -1,6 +1,7 @@
 function removeEmptyColumns(){
-  // so I want to get the data into the SheetData object 
-  let sheetData = new SheetData(getSheetData())
+  // so I want to get the data into the SheetData object
+  let { ss, sheetData } = getSheetData()
+  let sheetData = new SheetData(sheetData)
   // concatenate each column's values
   let smushedColumns = []
   // add an index key for each column index
@@ -23,6 +24,5 @@ function removeEmptyColumns(){
     row.filter((cell, i) => 
     emptyIndices.indexOf(i) === -1)
   )
-  let ss = SpreadsheetApp.getActiveSpreadsheet() || SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/10ovW3AM7slqVe-brCvxJznO5w_q4h2tAI9zozHTkSXQ/edit');
   createNewSheetWithData(ss, newData, "Trimmed")
 }

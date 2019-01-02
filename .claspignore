@@ -2,6 +2,7 @@
 !src/Needless.ts
 !src/commitmentToPo.ts
 !src/commitmentToSkuSheet.ts
+!src/removeEmptyColumns.ts
 !src/nordstromInv.ts
 !src/nordstromPicklist.ts
 !src/utils.ts

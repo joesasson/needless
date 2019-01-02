@@ -12,6 +12,11 @@ function nordstromPicklist(){
   // takes in a list of indices, and sheet data and returns a new data with only the extracted columns
   let indices = [poI, skuI, titleI, qtyI]
   let extracted = wrapped.extractColumnsByIndex(indices)
-  Logger.log({ indices, w: wrapped.reduceHeaders(), ex: extracted[0] })
+  extracted = extracted.map((row, i) => {
+    if(i === 0){
+      return [...row, "in stock"]
+    }
+    return [...row, ""]
+  })
   createNewSheetWithData(ss, extracted, "Extracted")
 }
