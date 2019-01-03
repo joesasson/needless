@@ -1,3 +1,5 @@
+import { reduceHeaders } from "./utils";
+
 function nordstromInv() {
   // remove the rows that have no stock in the in stock column
   // combine the first and last name columns into a new column with the title "name"
@@ -21,14 +23,17 @@ function nordstromInv() {
       row[ship_region],
       row[ship_postal],
       row[ship_method],
-      row[line_item_expected_cost],      
-      row[line_item_sku], 
+      row[line_item_expected_cost],
+      row[line_item_sku],
       row[line_item_quantity], 
     ]
   })
-  Logger.log(mapQtys(wrapped.data))
 
-  let shipData = wrapped.content.map(row => {
+  // Summarize item quantities, then calculate weight
+  let shipData = summarizeQtys(wrapped, po_number, line_item_quantity)
+
+  
+  shipData = shipData.map(row => {
     // constants
     let packagingType = "2" // "other" per ups - https://www.ups.com/us/en/shipping/create/shipping/create/batch-file.page # packaging type codes
     // extracts
@@ -50,6 +55,7 @@ function nordstromInv() {
       "",
       row[ship_city],
       row[ship_region],
+      row[ship_postal],
       row[ship_phone],
       ...addSpaces(3),
       packagingType,
@@ -59,10 +65,10 @@ function nordstromInv() {
       shipMethod
     ]
   })
-
+  
   // create a new sheet
   createNewSheetWithData(ss, invData, "Invoice Import")
-  createNewSheetWithData(ss, shipData, "Batch File for UPS.com")
+  createNewSheetWithData(ss, shipData, "ups")
 }
 
 const addSpaces = numSpaces => {
@@ -75,17 +81,51 @@ const addSpaces = numSpaces => {
 
 const calculateWeight = qty => Math.ceil(qty * 1.2 + 1)
 
+const summarizeQtys = (shipData: SheetData, poIndex: Number, qtyIndex: Number) => {
+  const qtyMap = mapQtys(shipData)
+  // remove all rows with duplicate po#
+  let filtered = filterByUniqueColumn(shipData.content, poIndex)
+  // set qty based on qtyMap
+  let newData = setQtys(filtered, qtyMap, poIndex, qtyIndex)
+  return filtered
+}
+
+const setQtys = (data, qtyMap, poIndex, qtyIndex) => {
+  return data.map(row => {
+    const po = row[poIndex]
+    const newQty = qtyMap[po]
+    // set the row's quantity index to the new qty and return the row
+    if(po == "78020677"){ Logger.log({before: row[qtyIndex]}) }
+    row[qtyIndex] = newQty
+    if(po == "78020677"){ Logger.log({ after: row[qtyIndex] }) }
+    return row
+  })
+}  
+
 const mapQtys = sheetData => {
-  let { po_number, line_item_quantity } = reduceHeaders(sheetData)
+  let { po_number, line_item_quantity } = sheetData.reduceHeaders()
   let qtyMap = {}
-  return sheetData.forEach( row => {
+  sheetData.content.forEach((row, i) => {
     let po = row[po_number]
-    let qty = row[line_item_quantity]
-    Logger.log(qty)
+    let qty = Number(row[line_item_quantity])
     if(qtyMap[po]){
-      return qtyMap[po].qty += qty
+      qtyMap[po] += qty
     } else {
-      return qtyMap[po].qty = qty
+      qtyMap[po] = qty
+    }
+  })
+  return qtyMap
+}
+
+const filterByUniqueColumn = (data: [][], columnIndex) => {
+  let vals = []
+  return data.filter((row, i, self) => {
+    const rowVal = row[columnIndex]
+    if(vals.indexOf(rowVal) > -1){
+      return false
+    } else {
+      vals.push(rowVal)
+      return true
     }
   })
 }
