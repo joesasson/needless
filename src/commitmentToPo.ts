@@ -1,6 +1,6 @@
 function commitmentToPo() {
   let ss = SpreadsheetApp.getActiveSpreadsheet() || SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1NbnknGTdgOJ-8MjmtKwIE8A-ZsP75nIMgSBwAcOzZn8/edit');
-  let sheet = ss.getSheets()[1];
+  let sheet = ss.getSheetByName("Stage Details");
   let sheetData = sheet.getDataRange().getValues();
 
   let { 

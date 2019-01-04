@@ -18,5 +18,5 @@ function nordstromPicklist(){
     }
     return [...row, ""]
   })
-  createNewSheetWithData(ss, extracted, "Extracted")
+  createNewSheetWithData(ss, extracted, "Nordstrom Dropship Picklist")
 }
