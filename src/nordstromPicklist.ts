@@ -18,5 +18,7 @@ function nordstromPicklist(){
     }
     return [...row, ""]
   })
+  // TODO: sort by sku
+
   createNewSheetWithData(ss, extracted, "Nordstrom Dropship Picklist")
 }

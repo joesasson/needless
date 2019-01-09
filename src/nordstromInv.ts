@@ -7,13 +7,18 @@ function nordstromInv() {
   const wrapped = new SheetData(sheetData)
   const { retailer_create_date, po_number, ship_first_name, ship_last_name, ship_address_1, ship_address_2
   ship_city, ship_region, ship_postal, ship_country, ship_method, line_item_sku, line_item_expected_cost
-  line_item_quantity, in_stock, ship_phone } = wrapped.reduceHeaders()
+  line_item_quantity, in_stock, ship_phone, dsco_order_id } = wrapped.reduceHeaders()
 
   let invData = wrapped.data.map((row, i) => {
-    // transforms
+    // transforms/ headers only
       // name
-    let name = i > 0 ? `${row[ship_first_name]} ${row[ship_last_name]}`.replace("  ", " ") : "name"
-    let sku = row[line_item_sku].replace("50567-CHR", "50567-CHRN")
+      // skus that are mismatched
+    const name = i > 0 ? `${row[ship_first_name]} ${row[ship_last_name]}`.replace("  ", " ") : "name"
+    const sku = row[line_item_sku].replace("50567-CHR", "50567-CHRN")
+    // headers only
+    const tracking = i === 0 ? 'Tracking' : ""
+    const invoice = i === 0 ? "Invoice" : ""
+
     return [
       row[retailer_create_date],
       row[po_number],
@@ -26,7 +31,10 @@ function nordstromInv() {
       row[ship_method],
       row[line_item_expected_cost],
       sku,
-      row[line_item_quantity], 
+      row[line_item_quantity],
+      row[dsco_order_id],
+      tracking,
+      invoice
     ]
   })
 
