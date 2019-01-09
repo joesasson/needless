@@ -6,5 +6,7 @@
 !src/nordstromInv.ts
 !src/nordstromPicklist.ts
 !src/utils.ts
+!src/keys.ts
+!src/sendDataToDsco.ts
 !appsscript.json
 

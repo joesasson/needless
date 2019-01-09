@@ -1,5 +1,5 @@
 /node_modules
 .clasp.json
 package-lock.json
-keys.ts
+src/keys.ts
 private.clasp.json

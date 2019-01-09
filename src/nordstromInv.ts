@@ -13,6 +13,7 @@ function nordstromInv() {
     // transforms
       // name
     let name = i > 0 ? `${row[ship_first_name]} ${row[ship_last_name]}`.replace("  ", " ") : "name"
+    let sku = row[line_item_sku].replace("50567-CHR", "50567-CHRN")
     return [
       row[retailer_create_date],
       row[po_number],
@@ -24,7 +25,7 @@ function nordstromInv() {
       row[ship_postal],
       row[ship_method],
       row[line_item_expected_cost],
-      row[line_item_sku],
+      sku,
       row[line_item_quantity], 
     ]
   })
@@ -62,7 +63,9 @@ function nordstromInv() {
       "",
       weight,
       ...addSpaces(8),
-      shipMethod
+      shipMethod, // row 25
+      ...addSpaces(7),
+      row[po_number]
     ]
   })
   

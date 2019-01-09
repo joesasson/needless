@@ -5,7 +5,8 @@ function onOpen(e){
       .addItem('Commitment Plan to Sku Worksheet', 'commitmentToSkuSheet'))
     .addSubMenu(SpreadsheetApp.getUi().createMenu("Nordstrom Dropship")
       .addItem("Generate Picklist", "nordstromPicklist")
-      .addItem("Generate Invoice and Shipping Upload", "nordstromInv"))
+      .addItem("Generate Invoice and Shipping Upload", "nordstromInv")
+      .addItem("Update Data in dsco", "sendDataToDsco"))
     .addSubMenu(SpreadsheetApp.getUi().createMenu('General Tasks')
       .addItem("Remove Empty Columns", "removeEmptyColumns"))
     .addToUi();
