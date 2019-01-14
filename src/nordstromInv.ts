@@ -25,7 +25,7 @@ function nordstromInv() {
       name,
       row[ship_address_1],
       row[ship_address_2],
-      row[ship_city],
+      row[ship_city], 
       row[ship_region],
       row[ship_postal],
       row[ship_method],

@@ -22,8 +22,15 @@ function sendDataToDsco() {
   // TODO : send in one request
   // TODO : deal with multiple line items
   // Update Shipping
+
+  interface Product {
+    sku: String
+    quantity: Number
+  }
+
+  let items: Product[] = [] // contains array of  { "sku": "14598-B_5", "quantity": "5"}
   
-  sheetData.forEach((row, i) => {
+  sheetData.forEach((row, i, self) => {
     if(i === 0) return
     const dsco_id = row[dsco_order_id]
     const po = row[po_number]
@@ -31,59 +38,84 @@ function sendDataToDsco() {
     const sku = row[line_item_sku]
     const qty = row[line_item_quantity]
     const shipMethod = row[ship_method]
-    
-    // Update Shipping
-    let shippingPayload = {
-      "dscoRetailerId": dscoRetailerId,
-      "dscoSupplierId": dscoSupplierId,
-      "poNumber": po,
-      "packages": [
-        {
-          "trackingNumber": trackingNum,
-          "shipMethod": shipMethod,
-          "shipCarrier": "UPS",
-          "items": [
-            {
-              "sku": sku,
-              "quantity": qty
-            }
-          ]
-        }
-      ]
-    }
-    const shippingEndpoint = `https://apis.dsco.io/api/v2/order/${dsco_id}/shipment`
-    // Make requests and add responses
-    let res = makeRequests(shippingEndpoint, shippingPayload)
-    responses.push([res, ""])
-    // Update Invoice
-  })
-    
-  sheetData.forEach((row, i) => {
+    const isLastItem = i === self.length - 1 || row[po_number] !== self[i + 1][po_number] // po number doesn't match next row's po number
+
+    if(!isLastItem){
+      // update items
+      items.push({ "sku" : sku, "quantity" : qty })
+      responses.push(["", ""])
+    } else {
+      // update items
+      items.push({ "sku" : sku, "quantity" : qty })
+      // set payload
+      // Update Shipping
+      let shippingPayload = {
+        "dscoRetailerId": dscoRetailerId,
+        "dscoSupplierId": dscoSupplierId,
+        "poNumber": po,
+        "packages": [
+          {
+            "trackingNumber": trackingNum,
+            "shipMethod": shipMethod,
+            "shipCarrier": "UPS",
+            "items": items
+          }
+        ]
+      }
+      const shippingEndpoint = `https://apis.dsco.io/api/v2/order/${dsco_id}/shipment`
+      // Make requests and add responses
+      let res = makeRequests(shippingEndpoint, shippingPayload)
+      responses.push([res, ""])
+      // clear items for next po
+      items = []
+  }
+})
+
+  let lineItems = []
+  let lineNumber = 1
+  let totalAmount = 0
+  // Update Invoice
+  sheetData.forEach((row, i, self) => {
     if(i === 0) return
     const poNumber = row[po_number]
     const invoiceId = row[invoice]
-    const totalAmount = row[line_item_expected_cost]
     const quantity = row[line_item_quantity]
-    const skuV = row[line_item_sku]
+    const sku = row[line_item_sku]
     const unitPrice = row[line_item_expected_cost]
-  
-    let invoicePayload = {
+    const isLastItem = i === self.length - 1 || row[po_number] !== self[i + 1][po_number] // po number doesn't match next row's po number
+    
+    if(!isLastItem){
+      lineItems.push({
+        "sku": sku,
+        "quantity": quantity,
+        "unitPrice": unitPrice,
+        "lineNumber": lineNumber
+      })
+      lineNumber++
+      totalAmount += unitPrice
+      responses.push(["", ""])
+    } else {
+      lineItems.push({
+        "sku": sku,
+        "quantity": quantity,
+        "unitPrice": unitPrice,
+        "lineNumber": ++lineNumber
+      })
+      totalAmount += unitPrice 
+      let invoicePayload = {
         "invoiceId" : invoiceId,
         "poNumber" : poNumber, 
         "totalAmount" : totalAmount,
-        "lineItems" : [
-            {
-                "lineNumber" : 1,
-                "quantity" : quantity, 
-                "sku": skuV, 
-                "unitPrice" : unitPrice 
-              }
-            ]
-        }
-    const invoiceEndpoint = `https://apis.dsco.io/api/v2/invoice`
-
-    let res = makeRequests(invoiceEndpoint, invoicePayload)
-    responses[i][1] = res
+        "lineItems" : lineItems
+      }
+      const invoiceEndpoint = `https://apis.dsco.io/api/v2/invoice`
+  
+      let res = makeRequests(invoiceEndpoint, invoicePayload)
+      responses[i][1] = res
+      lineNumber = 0  
+      totalAmount = 0
+      lineItems = []
+    }
   }) 
   const target = sheet.getRange(1, 16, responses.length, responses[0].length)
   target.setValues(responses)
