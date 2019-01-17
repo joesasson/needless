@@ -4,6 +4,7 @@ function nordstromInv() {
   // remove the rows that have no stock in the in stock column
   // combine the first and last name columns into a new column with the title "name"
   const { ss, sheetData } = getSheetData()
+  createNewSheetWithData(ss, [['']], "Tracking")
   const wrapped = new SheetData(sheetData)
   const { retailer_create_date, po_number, ship_first_name, ship_last_name, ship_address_1, ship_address_2
   ship_city, ship_region, ship_postal, ship_country, ship_method, line_item_sku, line_item_expected_cost
@@ -15,9 +16,20 @@ function nordstromInv() {
       // skus that are mismatched
     const name = i > 0 ? `${row[ship_first_name]} ${row[ship_last_name]}`.replace("  ", " ") : "name"
     const sku = row[line_item_sku].replace("50567-CHR", "50567-CHRN")
-    // headers only
-    const tracking = i === 0 ? 'Tracking' : ""
-    const invoice = i === 0 ? "Invoice" : ""
+    // formulas
+    const rowNumber = i + 1 // to offset 0 index in formulas
+    const nextRowNumber = rowNumber + 1
+    const previousRowNumber = i
+    const trackingFormula = `=INDEX(Tracking!E:E, MATCH(C${rowNumber}, Tracking!AN:AN, 0))`
+    const invoiceFormula = `=IF(B${rowNumber}=B${previousRowNumber},O${previousRowNumber}, O${previousRowNumber}+1)`
+
+    if(i === 0){
+      const tracking = "Tracking"
+      const invoice = "Invoice" 
+    } else {
+      const tracking = trackingFormula
+      const invoice = i === 1 ? "Enter first invoice number here" : invoiceFormula
+    }
 
     return [
       row[retailer_create_date],
@@ -55,6 +67,7 @@ function nordstromInv() {
     let name = `${row[ship_first_name]} ${row[ship_last_name]}`.replace("  ", " ")
     let weight = calculateWeight(row[line_item_quantity])
     let shipMethod = row[ship_method] === "2nd Day Air" ? "2" : "3" // if method is not 2nd day air, assume it's ground
+    let phone = row[ship_phone] === 0 ? '' : row[ship_phone]
     return [
       " ", // empty space for company
       name,
@@ -65,7 +78,7 @@ function nordstromInv() {
       row[ship_city],
       row[ship_region],
       row[ship_postal],
-      row[ship_phone],
+      phone,
       ...addSpaces(3),
       packagingType,
       "",
