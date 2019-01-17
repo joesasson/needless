@@ -8,7 +8,8 @@ function onOpen(e){
       .addItem("Generate Invoice and Shipping Upload", "nordstromInv")
       .addItem("Update Data in dsco", "sendDataToDsco"))
     .addSubMenu(SpreadsheetApp.getUi().createMenu('General Tasks')
-      .addItem("Remove Empty Columns", "removeEmptyColumns"))
+      .addItem("Remove Empty Columns", "removeEmptyColumns")
+      .addItem("Extract Sales Order Details", "extractSalesOrder"))
     .addToUi();
 }
 

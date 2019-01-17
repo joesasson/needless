@@ -1,6 +1,7 @@
 **/**
 !src/Needless.ts
 !src/commitmentToPo.ts
+!src/extractSalesOrder.ts
 !src/commitmentToSkuSheet.ts
 !src/removeEmptyColumns.ts
 !src/nordstromInv.ts
@@ -9,4 +10,3 @@
 !src/keys.ts
 !src/sendDataToDsco.ts
 !appsscript.json
-
