@@ -9,19 +9,33 @@ This script was scaffolded by yeoman [generator-clasp](https://github.com/joesas
 Visit link above for instructions on running this scaffold thorugh yeoman.
 
 
-## Functions
+## What's New:
 
-- Turn an Amazon Commitment plan into a file suitable for upload as a Quickbooks PO
-- Turn an Amazon Commitment plan into a Sku Creation Worksheet to be pasted (or uploaded) into qb
+### General Stuff
 
-## Steps
+- Generate a sales order/invoice for import into quickbooks (Hardcoded for Nordstrom Rack)
+- Generate a multi store picklist that separates qty by sku and store # (Hardcoded for Nordstrom Rack)
 
-- Select the "Stage Details" Sheet within the commitment plan
-- extract asin, upc/ean, sku(model number and size name connected by underscore), and order quantity
-- filter by date
-- Next step is to run this script on multiple files within a folder
+## What's Next:
 
-## Testing
+- Make so/invoice import abstract for any customer
+- Make picklist abstract for any customer
 
-[jest](https://jestjs.io) is being used for testing
-Setup is pretty complicated, I should document how to set this up
+## Previous Changes:
+
+### 1-29-19
+
+- Add formulas to Invoice Generator
+- Remove 0 phone numbers
+- Generate a Tracking Tab automatically
+
+
+### 1-14-19
+
+- Added support for po's with multiple line items in a Nordstrom Rack Order
+- Modified the Invoice Generator for Nordstrom to include an dsco id, and empty columns for tracking and invoice #s
+
+
+This Add-on aims to eliminate needless work from many of the data entry processes that take place at Marc Joseph New York.
+
+
