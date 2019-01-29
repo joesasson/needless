@@ -70,7 +70,7 @@ const cleanSize = size => size.replace(" M US", "")
 const capitalize = string => string.split(" ").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ")
 
 function getSheetData() {
-  let testUrl = "https://docs.google.com/spreadsheets/d/1KwRJ9Dcxp97EFkUenfD7uyZyRntlCluNGWLFjiybxzA/edit"
+  let testUrl = TEST_URL
   let ss = SpreadsheetApp.getActiveSpreadsheet() || SpreadsheetApp.openByUrl(testUrl);
   let sheet = ss.getSheets()[0];
   let sheetData = sheet.getDataRange().getValues();

@@ -9,4 +9,5 @@
 !src/utils.ts
 !src/keys.ts
 !src/sendDataToDsco.ts
+!src/generatePicklist.ts
 !appsscript.json

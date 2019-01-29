@@ -2,14 +2,20 @@ function onOpen(e){
   SpreadsheetApp.getUi().createMenu("Needless")
     .addSubMenu(SpreadsheetApp.getUi().createMenu("Amazon PO")
       .addItem('Commitment Plan to QB PO', 'commitmentToPo')
-      .addItem('Commitment Plan to Sku Worksheet', 'commitmentToSkuSheet'))
+      .addItem('Commitment Plan to Sku Worksheet', 'commitmentToSkuSheet')
+    )
     .addSubMenu(SpreadsheetApp.getUi().createMenu("Nordstrom Dropship")
       .addItem("Generate Picklist", "nordstromPicklist")
       .addItem("Generate Invoice and Shipping Upload", "nordstromInv")
-      .addItem("Update Data in dsco", "sendDataToDsco"))
+      .addItem("Update Data in dsco", "sendDataToDsco")
+    )
     .addSubMenu(SpreadsheetApp.getUi().createMenu('General Tasks')
       .addItem("Remove Empty Columns", "removeEmptyColumns")
-      .addItem("Extract Sales Order Details", "extractSalesOrder"))
+      .addItem("Extract Sales Order/Invoice Details", "extractSalesOrder")
+    )
+      .addSubMenu(SpreadsheetApp.getUi().createMenu('General Shipping')
+      .addItem("Generate Picklist", "generatePicklist")
+    )
     .addToUi();
 }
 
@@ -20,7 +26,12 @@ class SheetData {
   headerMap: {}
 
   constructor(data){
-    this.data = data
+    // remove first row if there is a 'sep=' in the first cell
+    if(data[0][0] === 'sep='){
+      this.data = data.slice(1)
+    } else {
+      this.data = data
+    }
     this.content = this.data.slice(1)
     this.headers = this.data[0]
     this.headerMap = this.reduceHeaders()
