@@ -3,3 +3,5 @@
 package-lock.json
 src/keys.ts
 private.clasp.json
+creds.json
+.clasprc.json

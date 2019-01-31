@@ -22,13 +22,15 @@ function nordstromInv() {
     const previousRowNumber = i
     const trackingFormula = `=INDEX(Tracking!E:E, MATCH(C${rowNumber}, Tracking!AN:AN, 0))`
     const invoiceFormula = `=IF(B${rowNumber}=B${previousRowNumber},O${previousRowNumber}, O${previousRowNumber}+1)`
+    let tracking
+    let invoice
 
     if(i === 0){
-      const tracking = "Tracking"
-      const invoice = "Invoice" 
+      tracking = "Tracking"
+      invoice = "Invoice" 
     } else {
-      const tracking = trackingFormula
-      const invoice = i === 1 ? "Enter first invoice number here" : invoiceFormula
+      tracking = trackingFormula
+      invoice = i === 1 ? "Enter first invoice number here" : invoiceFormula
     }
 
     return [
@@ -68,6 +70,7 @@ function nordstromInv() {
     let weight = calculateWeight(row[line_item_quantity])
     let shipMethod = row[ship_method] === "2nd Day Air" ? "2" : "3" // if method is not 2nd day air, assume it's ground
     let phone = row[ship_phone] === 0 ? '' : row[ship_phone]
+    let zip = `'${row[ship_postal]}` // add apostrophe  to prevent truncating in google sheets
     return [
       " ", // empty space for company
       name,
@@ -77,7 +80,7 @@ function nordstromInv() {
       "",
       row[ship_city],
       row[ship_region],
-      row[ship_postal],
+      zip,
       phone,
       ...addSpaces(3),
       packagingType,
