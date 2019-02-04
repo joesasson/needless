@@ -1,3 +1,5 @@
+import { camelize, reduceHeaders } from './utils'
+
 function onOpen(e){
   SpreadsheetApp.getUi().createMenu("Needless")
     .addSubMenu(SpreadsheetApp.getUi().createMenu("Amazon PO")
@@ -95,5 +97,8 @@ class SheetData {
     }, [])
   }
 }
+
+
+export { SheetData }
 
 

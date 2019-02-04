@@ -1,18 +1,29 @@
-function extractSalesOrder() {
-  let { ss, sheetData } = getSheetData();
-  const wrapped = new SheetData(sheetData);
+import { getSheetData, reduceHeaders, createNewSheetWithData } from './utils'
+import { SheetData } from './Needless'
 
-  // indices
-  let indices = wrapped.reduceHeaders();
+function extractSalesOrder() {
+  let { ss, sheetData } = getSheetData(); // don't need to test this
+  const wrapped = new SheetData(sheetData); // don't need to test (I should test the sheetData constructor though)
+  Logger.log(sheetData)
+
+  // call a function here that will return the new data and set it in this function
+  const newData = generateSalesOrder(wrapped);
+  Logger.log(newData)
+
+  createNewSheetWithData(ss, newData, "Quickbooks Import");
+}
+
+const generateSalesOrder = sheetData => {
+  let indices = sheetData.reduceHeaders(); // test until line
   let customer;
   const detectNordstrom =
-    wrapped.content[0][indices.poTerms] &&
-    wrapped.content[0][indices.poTerms].indexOf("NORDSTROM") > -1;
-  const detectHautelook = wrapped.data[0][0] === "NORDSTROM PURCHASE ORDER";
+    sheetData.content[0][indices.poTerms] &&
+    sheetData.content[0][indices.poTerms].indexOf("NORDSTROM") > -1;
+  const detectHautelook = sheetData.data[0][0] === "NORDSTROM PURCHASE ORDER";
   if (detectNordstrom) {
     customer = "Nordstrom Rack";
   } else if (detectHautelook) {
-    customer = "Hautelook";
+    customer = "Nordstromrack.com/Hautelook";
   }
 
   let masterPo;
@@ -24,16 +35,16 @@ function extractSalesOrder() {
   // constants based on customer
   switch (customer) {
     case "Nordstrom Rack":
-      masterPo = wrapped.data[1][indices.po];
-      ship_date = wrapped.data[1][indices.shipNotBefore];
-      cancel_date = wrapped.data[1][indices.cancelAfter];
+      masterPo = sheetData.data[1][indices.po];
+      ship_date = sheetData.data[1][indices.shipNotBefore];
+      cancel_date = sheetData.data[1][indices.cancelAfter];
       carrier = "Gilbert East";
       date = ship_date;
       break;
-    case "Hautelook":
-      masterPo = wrapped.data[16][2];
-      ship_date = wrapped.data[13][2];
-      cancel_date = wrapped.data[14][2];
+    case "Nordstromrack.com/Hautelook":
+      masterPo = sheetData.data[16][2];
+      ship_date = sheetData.data[13][2];
+      cancel_date = sheetData.data[14][2];
       carrier = "XPOLOGISTICS";
       date = ship_date;
       break;
@@ -41,11 +52,11 @@ function extractSalesOrder() {
       Logger.log("Customer not found");
   }
 
-  let globalStyle
-  let globalRate
+  let globalStyle;
+  let globalRate;
 
   // final result
-  let newData = wrapped.data
+  let newData = sheetData.data
     .map((row, i) => {
       let style;
       let size;
@@ -98,9 +109,9 @@ function extractSalesOrder() {
           zip = row[indices.shipToZipcode];
           shipTo2 = `${address} ${city}, ${state} ${zip}`;
           break;
-        case "Hautelook":
+        case "Nordstromrack.com/Hautelook":
           // skip rows before 27
-          const newIndices = reduceHeaders(wrapped.data, 26);
+          const newIndices = reduceHeaders(sheetData.data, 26);
           const firstRowOfDetails = 27;
           if (i < firstRowOfDetails) return null;
           let styleVal = row[newIndices.vpn];
@@ -115,23 +126,20 @@ function extractSalesOrder() {
             return null;
           }
           // find row with a style
-          // set the style and rate until the next style is found 
-          if(styleVal !== ""){
-            globalStyle = styleVal
+          // set the style and rate until the next style is found
+          if (styleVal !== "") {
+            globalStyle = styleVal;
             globalRate = row[newIndices.unitCost];
-            return null
+            return null;
           }
 
-          style = globalStyle
+          style = globalStyle;
           sku = `${style}_${size}`;
-          qty = row[newIndices.ttlUnits];    
+          qty = row[newIndices.ttlUnits];
           store = row[newIndices.store];
           po = masterPo;
-          rate = globalRate
+          rate = globalRate;
           // Change customer name if we're on the last row
-          if(i == wrapped.data.length - 1){
-            customer = "Nordstromrack.com/Hautelook"
-          }
           break;
         default:
           Logger.log("Customer not found");
@@ -154,5 +162,7 @@ function extractSalesOrder() {
     })
     .filter(x => x);
 
-  createNewSheetWithData(ss, newData, "Quickbooks Import");
-}
+  return newData;
+};
+
+export { generateSalesOrder };

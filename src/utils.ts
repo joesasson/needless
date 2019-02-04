@@ -118,4 +118,4 @@ export const mapHeaders = data => {
 const getIndexByHeader = (camelizedName, headerMap) =>
   headerMap.find(column => column.headerName === camelizedName).headerIndex;
 
-export { capitalize, camelize, getIndexByHeader, reduceHeaders };
+export { capitalize, camelize, getIndexByHeader, reduceHeaders, getSheetData, createNewSheetWithData };
