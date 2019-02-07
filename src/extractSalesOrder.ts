@@ -2,8 +2,8 @@ import { getSheetData, reduceHeaders, createNewSheetWithData } from './utils'
 import { SheetData } from './Needless'
 
 function extractSalesOrder() {
-  let { ss, sheetData } = getSheetData(); // don't need to test this
-  const wrapped = new SheetData(sheetData); // don't need to test (I should test the sheetData constructor though)
+  let { ss, sheetData } = getSheetData(); 
+  const wrapped = new SheetData(sheetData); 
   Logger.log(sheetData)
 
   // call a function here that will return the new data and set it in this function
@@ -14,7 +14,7 @@ function extractSalesOrder() {
 }
 
 const generateSalesOrder = sheetData => {
-  let indices = sheetData.reduceHeaders(); // test until line
+  let indices = sheetData.reduceHeaders();
   let customer;
   const detectNordstrom =
     sheetData.content[0][indices.poTerms] &&
@@ -139,7 +139,6 @@ const generateSalesOrder = sheetData => {
           store = row[newIndices.store];
           po = masterPo;
           rate = globalRate;
-          // Change customer name if we're on the last row
           break;
         default:
           Logger.log("Customer not found");
