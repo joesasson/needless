@@ -68,6 +68,17 @@ class SheetData {
     return months
   }
 
+  detectCustomer(){
+    if(this.data[1][48].indexOf("VON MAUR") > -1){
+      return 'Von Maur'
+    } else if(this.data[0][9].indexOf("Nordstrom") > -1){
+      return 'Nordstrom Rack'
+    } else {
+      throw new Error("Customer not found")
+    }
+  }
+
+
   dateFilter(filterDate) {
     let { shipStartDate } = reduceHeaders(this.data)
     return this.data.filter(row => row[shipStartDate] === filterDate) 
