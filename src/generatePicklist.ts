@@ -3,13 +3,16 @@ function generatePicklist() {
   const wrapped = new SheetData(sheetData);
   // von maur uses buyerStoreNo as header for store
   const customer = wrapped.detectCustomer()
-  Logger.log(customer)
+  // Source Transformations
+
+  // Target
 
   // let metadata = [['Customer'], ['PO #'], ['Start Ship Date'], ["Cancel Date"]]
   // map sku@store - qty pairs
-  let qtys = collectQtys(wrapped.data, customer);
+  let qtys = collectQtys(wrapped, customer);
+  Logger.log(qtys)
   // set up columns
-  let stores = getUniqueStores(wrapped);
+  let stores = getUniqueStores(wrapped, customer);
   let doneSkus = [];
   // loop through rows and set sku in first column and qty based on sku + column name
   let newData = wrapped.data
@@ -18,10 +21,27 @@ function generatePicklist() {
         // header row
         return ["sku", ...stores];
       }
-      const { vendorStyle, vendorSizeDescription } = wrapped.reduceHeaders();
-      const style = row[vendorStyle];
-      const size = row[vendorSizeDescription];
-      const sku = `${style}_${size}`;
+      let style = ''
+      let size = ''
+      let sku = ''
+      let indices = wrapped.reduceHeaders()
+      // variables for nordstrom rack
+      if(customer === 'Nordstrom Rack'){
+        const { vendorStyle, vendorSizeDescription } = wrapped.reduceHeaders();
+        style = row[vendorStyle];
+        size = row[vendorSizeDescription];
+        sku = `${style}_${size}`; 
+      } else if(customer === 'Von Maur'){
+        const upcI = indices.productCode
+        const upc = row[upcI]
+        sku = lookupBarcode(upc)
+      }
+      
+
+
+      
+
+      // variables for von maur
       if (doneSkus.indexOf(sku) > -1) {
         return null;
       }
@@ -37,7 +57,7 @@ function generatePicklist() {
   createNewSheetWithData(ss, newData, "Nordstrom Rack - Picklist");
 }
 
-const collectQtys = (data, customer) => {
+const collectQtys = (sheetData, customer) => {
   // get headers norstrom rack specific
   if(customer === "Nordstrom Rack"){
     const {
@@ -45,22 +65,49 @@ const collectQtys = (data, customer) => {
       vendorStyle, // style
       vendorSizeDescription, // size
       orderedQty // qty
-    } = reduceHeaders(data);
-    return data.reduce((qtys, row) => {
+    } = sheetData.reduceHeaders();
+    return sheetData.data.reduce((qtys, row) => {
       const store = row[storeI];
       const sku = `${row[vendorStyle]}_${row[vendorSizeDescription]}`;
       const qty = row[orderedQty];
       const rowKey = `${sku}@${store}`;
       return { ...qtys, [rowKey]: qty };
     }, {});
+
+  } else if(customer === 'Von Maur'){
+    const {
+      buyerStoreNo: storeI, // store number
+      productCode: upcI, // upc
+      qtyOrdered // qty
+    } = sheetData.reduceHeaders();
+    return sheetData.data.reduce((qtys, row, i) => {
+      if(i === 0) return qtys
+      const store = row[storeI];
+      const upc = row[upcI]
+      const sku = lookupBarcode(upc)
+      Logger.log({ upc, sku })
+      const qty = row[qtyOrdered];
+      const rowKey = `${sku}@${store}`;
+      return { ...qtys, [rowKey]: qty }; // add the key value pair to the object
+    }, {});
+  } else {
+    return new Error("Customer not found")
   }
 };
 
-const getUniqueStores = sheetData =>
+const getUniqueStores = (sheetData, customer) =>
   sheetData.data
     .reduce((stores, row, i) => {
       if (i === 0) return stores;
-      const { store } = sheetData.reduceHeaders();
+      let store = ''
+      const indices = sheetData.reduceHeaders();
+
+      if(customer === 'Von Maur'){
+        store = indices.buyerStoreNo 
+      } else if(customer === 'Nordstrom Rack') {
+        store = indices.store
+      }
+
       if (stores.indexOf(row[store]) > -1) {
         return stores;
       }

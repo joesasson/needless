@@ -115,6 +115,27 @@ export const mapHeaders = data => {
   return headerMap;
 };
 
+const lookupBarcode = upc => {
+  const url = 'https://sku-barcode-lookup.herokuapp.com/graphql'
+  const payload = {
+    query:  
+    `{ pair(upc:"${upc}") { sku } }` 
+  }
+  const options = {
+    method: "post",
+    contentType: 'application/json' ,
+    muteHttpExceptions: true,
+    payload: JSON.stringify(payload)
+  }
+  //@ts-ignore: 
+  // Argument of type '{ method: string;}' is not assignable to parameter of type 'URLFetchRequestOptions'.
+  // Types of property 'method' are incompatible.
+  // Type 'string' is not assignable to type '"post" | "get" | "delete" | "patch" | "put"'. 
+  const response = UrlFetchApp.fetch(url, options).getContentText()
+  const sku = JSON.parse(response).data.pair.sku
+  return sku
+}
+
 const getIndexByHeader = (camelizedName, headerMap) =>
   headerMap.find(column => column.headerName === camelizedName).headerIndex;
 
