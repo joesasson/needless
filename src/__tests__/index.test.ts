@@ -2,7 +2,8 @@ import {
   getIndexByHeader,
   mapHeaders, 
   reduceHeaders, 
-  camelize 
+  camelize,
+  cleanSize 
 } from '../utils';
 
 describe('camelize', () => {
@@ -60,4 +61,15 @@ describe("getIndexByHeader", () => {
 })
 
 
-describe
+describe("cleanSize", () => {
+  test('Removes M US from size string', () => {
+    let sizeWithoutDesc = '5 M US'
+    let finalSize = cleanSize(sizeWithoutDesc)
+    expect(finalSize).toBe('5')
+  })
+  test('Removes all extra words', () => {
+    let sizeWithDesc = '5.5 M US Little Kid'
+    let finalSize = cleanSize(sizeWithDesc)
+    expect(finalSize).toBe('5.5')
+  })
+})

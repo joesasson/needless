@@ -85,7 +85,7 @@ const createNewSheetWithData = (
   return newSheet;
 };
 
-const cleanSize = size => size.replace(" M US", "");
+const cleanSize = size => size.split(" ")[0]
 
 const capitalize = string =>
   string
@@ -139,4 +139,4 @@ const lookupBarcode = upc => {
 const getIndexByHeader = (camelizedName, headerMap) =>
   headerMap.find(column => column.headerName === camelizedName).headerIndex;
 
-export { capitalize, camelize, getIndexByHeader, reduceHeaders, getSheetData, createNewSheetWithData };
+export { capitalize, camelize, getIndexByHeader, reduceHeaders, getSheetData, createNewSheetWithData, cleanSize };
