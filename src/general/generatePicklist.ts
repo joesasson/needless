@@ -10,7 +10,7 @@ function generatePicklist() {
   // let metadata = [['Customer'], ['PO #'], ['Start Ship Date'], ["Cancel Date"]]
   // map sku@store - qty pairs
   let qtys = collectQtys(wrapped, customer);
-  Logger.log(qtys)
+
   // set up columns
   let stores = getUniqueStores(wrapped, customer);
   let doneSkus = [];
@@ -36,11 +36,6 @@ function generatePicklist() {
         const upc = row[upcI]
         sku = lookupBarcode(upc)
       }
-      
-
-
-      
-
       // variables for von maur
       if (doneSkus.indexOf(sku) > -1) {
         return null;
@@ -85,7 +80,6 @@ const collectQtys = (sheetData, customer) => {
       const store = row[storeI];
       const upc = row[upcI]
       const sku = lookupBarcode(upc)
-      Logger.log({ upc, sku })
       const qty = row[qtyOrdered];
       const rowKey = `${sku}@${store}`;
       return { ...qtys, [rowKey]: qty }; // add the key value pair to the object

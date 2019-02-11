@@ -1,13 +1,4 @@
-**/**
-!src/Needless.ts
-!src/commitmentToPo.ts
-!src/extractSalesOrder.ts
-!src/commitmentToSkuSheet.ts
-!src/removeEmptyColumns.ts
-!src/nordstromInv.ts
-!src/nordstromPicklist.ts
-!src/utils.ts
-!src/keys.ts
-!src/sendDataToDsco.ts
-!src/generatePicklist.ts
-!appsscript.json
+node_modules/**
+node_modules/**/.*/**
+node_modules/**/.*
+src/__tests__/**
