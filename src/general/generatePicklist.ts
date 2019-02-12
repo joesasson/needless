@@ -49,7 +49,7 @@ function generatePicklist() {
   // sku        store1 store2 total
   // 14598-b_5  5       3     8
   // 14598-b_9  3       1     4
-  createNewSheetWithData(ss, newData, "Nordstrom Rack - Picklist");
+  createNewSheetWithData(ss, newData,  `${customer} - Picklist`);
 }
 
 const collectQtys = (sheetData, customer) => {
@@ -75,11 +75,18 @@ const collectQtys = (sheetData, customer) => {
       productCode: upcI, // upc
       qtyOrdered // qty
     } = sheetData.reduceHeaders();
+    let cachedSkus = {}
     return sheetData.data.reduce((qtys, row, i) => {
       if(i === 0) return qtys
       const store = row[storeI];
       const upc = row[upcI]
-      const sku = lookupBarcode(upc)
+      let sku = ''
+      if(cachedSkus[upc]){
+        sku = cachedSkus[upc]
+      } else {
+        sku = lookupBarcode(upc)
+        cachedSkus[upc] = sku
+      }
       const qty = row[qtyOrdered];
       const rowKey = `${sku}@${store}`;
       return { ...qtys, [rowKey]: qty }; // add the key value pair to the object
