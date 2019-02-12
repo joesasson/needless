@@ -3,7 +3,8 @@ import {
   mapHeaders, 
   reduceHeaders, 
   camelize,
-  cleanSize 
+  cleanSize,
+  getPaddedSku
 } from '../utils';
 
 describe('camelize', () => {
@@ -71,5 +72,26 @@ describe("cleanSize", () => {
     let sizeWithDesc = '5.5 M US Little Kid'
     let finalSize = cleanSize(sizeWithDesc)
     expect(finalSize).toBe('5.5')
+  })
+  test("Returns size if there are no extra words", () => {
+    let sizeWithoutExtra = '5'
+    let finalSize = cleanSize(sizeWithoutExtra)
+    expect(finalSize).toBe('5')
+  })
+})
+
+describe('getPaddedSku', () => {
+  let size10 = '14598-b_10'
+  let above10 = '14598-b_12.5'
+  let under10 = '14598-b_7.5'
+  test('returns sku when size 10 or over', () => {
+    let padded = getPaddedSku(size10)
+    expect(padded).toBe('14598-b_10')
+    padded = getPaddedSku(above10)
+    expect(padded).toBe('14598-b_12.5')
+  })
+  test('returns padded sku (extra 0 before the size) for sizes under 10', () => {
+    let padded = getPaddedSku(under10)
+    expect(padded).toBe('14598-b_07.5')
   })
 })

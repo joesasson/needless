@@ -14,6 +14,7 @@ function onOpen(e){
     .addSubMenu(SpreadsheetApp.getUi().createMenu('General Tasks')
       .addItem("Remove Empty Columns", "removeEmptyColumns")
       .addItem("Extract Sales Order/Invoice Details", "extractSalesOrder")
+      .addItem("Generate Packing Slip", "generatePackingSlip")
     )
       .addSubMenu(SpreadsheetApp.getUi().createMenu('General Shipping')
       .addItem("Generate Picklist", "generatePicklist")
@@ -26,11 +27,13 @@ class SheetData {
   content: [][]
   headers: []
   headerMap: {}
+  transmissionType: String
 
   constructor(data){
     // remove first row if there is a 'sep=' in the first cell
     if(data[0][0] === 'sep='){
       this.data = data.slice(1)
+      this.transmissionType = "edi"
     } else {
       this.data = data
     }
@@ -69,15 +72,32 @@ class SheetData {
   }
 
   detectCustomer(){
-    if(this.data[1][48].indexOf("VON MAUR") > -1){
+    const firstCell = this.data[0][0]
+    if(firstCell === "Trans Control No"){
       return 'Von Maur'
     } else if(this.data[0][9].indexOf("Nordstrom") > -1){
       return 'Nordstrom Rack'
-    } else {
+    } else if(firstCell === 'ASIN'){
+      return 'Amazon'
+    } else if(firstCell === 'NORDSTROM PURCHASE ORDER') {
+      return 'Nordstromrack.com/Hautelook'
+    } else{
       throw new Error("Customer not found")
     }
   }
 
+  getMetaData(customer){
+    switch(customer){
+      // case 'Amazon':
+      //   break;
+      case 'Von Maur':
+        break;
+      case 'Nordstrom Rack':
+        break;
+      default:
+        break;
+    }
+  }
 
   dateFilter(filterDate) {
     let { shipStartDate } = reduceHeaders(this.data)

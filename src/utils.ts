@@ -93,13 +93,18 @@ const capitalize = string =>
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
 
-function getSheetData() {
+function getSheetData(sheetName='') {
   let testUrl = TEST_URL;
   let ss =
-    SpreadsheetApp.getActiveSpreadsheet() || SpreadsheetApp.openByUrl(testUrl);
-  let sheet = ss.getSheets()[0];
+  SpreadsheetApp.getActiveSpreadsheet() || SpreadsheetApp.openByUrl(testUrl);
+  // sheet can be either first (default), by name, or active if argument is 'active'
+  let sheet = !sheetName ? ss.getSheets()[0] : ss.getSheetByName(sheetName)
+  if(sheetName === 'active'){
+    sheet = ss.getActiveSheet()
+  }
   let sheetData = sheet.getDataRange().getValues();
   return { ss, sheet, sheetData };
+
 }
 
 export const mapHeaders = data => {
@@ -139,4 +144,9 @@ const lookupBarcode = upc => {
 const getIndexByHeader = (camelizedName, headerMap) =>
   headerMap.find(column => column.headerName === camelizedName).headerIndex;
 
-export { capitalize, camelize, getIndexByHeader, reduceHeaders, getSheetData, createNewSheetWithData, cleanSize };
+const getPaddedSku = sku => 
+  sku.split("_")[1] < 10 ?  // check if the size is under 10
+  `${sku.split("_")[0]}_0${sku.split("_")[1]}` : // add a zero if it's under 10
+  sku // return the original if it's 10 or over
+
+export { capitalize, camelize, getIndexByHeader, reduceHeaders, getSheetData, createNewSheetWithData, cleanSize, getPaddedSku };

@@ -14,6 +14,7 @@ function generatePicklist() {
   // set up columns
   let stores = getUniqueStores(wrapped, customer);
   let doneSkus = [];
+  let cachedSkus = {}
   // loop through rows and set sku in first column and qty based on sku + column name
   let newData = wrapped.data
     .map((row, i) => {
@@ -34,7 +35,12 @@ function generatePicklist() {
       } else if(customer === 'Von Maur'){
         const upcI = indices.productCode
         const upc = row[upcI]
-        sku = lookupBarcode(upc)
+        if(cachedSkus[upc]){
+          sku = cachedSkus[upc]
+        } else {
+          sku = lookupBarcode(upc)
+          cachedSkus[upc] = sku
+        }
       }
       // variables for von maur
       if (doneSkus.indexOf(sku) > -1) {
@@ -44,7 +50,15 @@ function generatePicklist() {
       const storeQtys = stores.map(store => qtys[`${sku}@${store}`] || "");
       return [sku, ...storeQtys];
     })
-    .filter(row => row);
+    .filter(row => row)
+  // sort by padded sku
+  let [headers, ...content] = newData
+  content.sort((a, b) => {
+    if(a[0] === 'sku') return 0
+    // get both skus, pad them and do a numerical compare
+    return getPaddedSku(a[0]).localeCompare(getPaddedSku(b[0]), 'en', { numeric: true })
+  })
+  newData = [headers, ...content]
   // rows = skus, columns = store #, values = qtys
   // sku        store1 store2 total
   // 14598-b_5  5       3     8
@@ -115,3 +129,7 @@ const getUniqueStores = (sheetData, customer) =>
       return [...stores, row[store]];
     }, [])
     .sort((a, b) => a - b);
+
+    const getPaddedSkus = () => {}
+
+    
