@@ -130,6 +130,4 @@ const getUniqueStores = (sheetData, customer) =>
     }, [])
     .sort((a, b) => a - b);
 
-    const getPaddedSkus = () => {}
-
     

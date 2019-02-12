@@ -17,7 +17,7 @@ function commitmentToPo() {
     let newData: any[][] = amazonSheetData.monthFilter(month)
     newData = newData.map((row, i) => {
       if(i === 0){
-        return ["Sku", "Quantity", "FNSKU", "UPC", "Ship Date", "Vendor", "PO(AVC-MMDD)", "Ex-Factory", "padded"]
+        return ["Sku", "Quantity", "FNSKU", "UPC", "Ship Date", "Vendor", "PO", "Ex-Factory", "padded"]
       }
       let shipDate = row[shipStartDate]
       let fnsku = row[asin]

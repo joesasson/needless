@@ -28,6 +28,8 @@ class SheetData {
   headers: []
   headerMap: {}
   transmissionType: String
+  dataWidth: Number
+  dataHeight: Number
 
   constructor(data){
     // remove first row if there is a 'sep=' in the first cell
@@ -40,6 +42,8 @@ class SheetData {
     this.content = this.data.slice(1)
     this.headers = this.data[0]
     this.headerMap = this.reduceHeaders()
+    this.dataWidth = this.data[0].length
+    this.dataHeight = this.data.length
   }
 
   extractColumnsByIndex(indices: Number[]){
@@ -75,9 +79,10 @@ class SheetData {
     const firstCell = this.data[0][0]
     if(firstCell === "Trans Control No"){
       return 'Von Maur'
-    } else if(this.data[0][9].indexOf("Nordstrom") > -1){
+    } else if(firstCell === "Transaction #"){
       return 'Nordstrom Rack'
-    } else if(firstCell === 'ASIN'){
+    } else if(firstCell === 'Sku'){
+      // We're in an amazon po
       return 'Amazon'
     } else if(firstCell === 'NORDSTROM PURCHASE ORDER') {
       return 'Nordstromrack.com/Hautelook'

@@ -4,7 +4,8 @@ import {
   reduceHeaders, 
   camelize,
   cleanSize,
-  getPaddedSku
+  getPaddedSku,
+  splitSku
 } from '../utils';
 
 describe('camelize', () => {
@@ -93,5 +94,15 @@ describe('getPaddedSku', () => {
   test('returns padded sku (extra 0 before the size) for sizes under 10', () => {
     let padded = getPaddedSku(under10)
     expect(padded).toBe('14598-b_07.5')
+  })
+})
+
+describe('splitSku', () => {
+  let sku = '14598-b_5'
+  test('returns an array with style and size', () => {
+    let style = splitSku(sku)[0]
+    let size = splitSku(sku)[1]
+    expect(style).toBe('14598-b')
+    expect(size).toBe('5')
   })
 })

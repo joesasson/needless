@@ -93,17 +93,18 @@ const capitalize = string =>
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
 
-function getSheetData(sheetName='') {
+function getSheetData(name='') {
   let testUrl = TEST_URL;
   let ss =
   SpreadsheetApp.getActiveSpreadsheet() || SpreadsheetApp.openByUrl(testUrl);
   // sheet can be either first (default), by name, or active if argument is 'active'
-  let sheet = !sheetName ? ss.getSheets()[0] : ss.getSheetByName(sheetName)
-  if(sheetName === 'active'){
+  let sheet = (!name) ? ss.getSheets()[0] : ss.getSheetByName(name)
+  if(name === 'active'){
     sheet = ss.getActiveSheet()
   }
   let sheetData = sheet.getDataRange().getValues();
-  return { ss, sheet, sheetData };
+  let sheetName = sheet.getSheetName()
+  return { ss, sheet, sheetData, sheetName };
 
 }
 
@@ -149,4 +150,14 @@ const getPaddedSku = sku =>
   `${sku.split("_")[0]}_0${sku.split("_")[1]}` : // add a zero if it's under 10
   sku // return the original if it's 10 or over
 
-export { capitalize, camelize, getIndexByHeader, reduceHeaders, getSheetData, createNewSheetWithData, cleanSize, getPaddedSku };
+const splitSku = sku => [sku.split("_")[0], sku.split("_")[1]]
+
+const addSpaces = numSpaces => {
+  let a = []
+  for(let i = 0; i < numSpaces; i++){
+    a.push("")
+  }
+  return a
+}
+
+export { capitalize, camelize, getIndexByHeader, reduceHeaders, getSheetData, createNewSheetWithData, cleanSize, getPaddedSku, splitSku };
