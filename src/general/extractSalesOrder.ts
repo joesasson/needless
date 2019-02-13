@@ -1,10 +1,10 @@
-import { getSheetData, reduceHeaders, createNewSheetWithData } from '../utils'
+import { getSheetData, reduceHeaders, createNewSheetWithData, lookupBarcode } from '../utils'
 import { SheetData } from '../Needless'
 
 function extractSalesOrder() {
   let { ss, sheetData } = getSheetData(); 
   const wrapped = new SheetData(sheetData); 
-  // Logger.log({ sheetData })
+  Logger.log({ sheetData })
   
   // call a function here that will return the new data and set it in this function
   const newData = generateSalesOrder(wrapped);
@@ -15,16 +15,7 @@ function extractSalesOrder() {
 
 const generateSalesOrder = sheetData => {
   let indices = sheetData.reduceHeaders();
-  let customer;
-  const detectNordstrom =
-    sheetData.content[0][indices.poTerms] &&
-    sheetData.content[0][indices.poTerms].indexOf("NORDSTROM") > -1;
-  const detectHautelook = sheetData.data[0][0] === "NORDSTROM PURCHASE ORDER";
-  if (detectNordstrom) {
-    customer = "Nordstrom Rack";
-  } else if (detectHautelook) {
-    customer = "Nordstromrack.com/Hautelook";
-  }
+  let customer = sheetData.detectCustomer()
 
   let masterPo;
   let ship_date;
@@ -47,6 +38,13 @@ const generateSalesOrder = sheetData => {
       cancel_date = sheetData.data[14][2];
       carrier = "XPOLOGISTICS";
       date = ship_date;
+      break;
+    case 'Von Maur':
+      masterPo = sheetData.data[1][indices.poNumber]
+      ship_date = sheetData.data[1][indices.shipNotBefore]
+      cancel_date = sheetData.data[1][indices.cancelAfter];
+      carrier = 'TGIR'
+      date = ship_date
       break;
     default:
       Logger.log("Customer not found");
@@ -140,11 +138,19 @@ const generateSalesOrder = sheetData => {
           po = masterPo;
           rate = globalRate;
           break;
+        case 'Von Maur':
+          store = row[indices.buyerStoreNo]
+          po = `${masterPo}-${store}`
+          qty = row[indices.qtyOrdered]
+          upc = row[indices.productCode]
+          rate = row[indices.unitPrice]
+          sku = lookupBarcode(upc)
+          break;
         default:
           Logger.log("Customer not found");
       }
 
-      return [
+      return [  
         sku,
         upc,
         qty,

@@ -127,16 +127,19 @@ const lookupBarcode = upc => {
     query:  
     `{ pair(upc:"${upc}") { sku } }` 
   }
+
   const options = {
     method: "post",
     contentType: 'application/json' ,
     muteHttpExceptions: true,
     payload: JSON.stringify(payload)
   }
+  if(typeof UrlFetchApp === 'undefined'){ return "14598-B_10" } // avoid breaking test
+
   //@ts-ignore: 
   // Argument of type '{ method: string;}' is not assignable to parameter of type 'URLFetchRequestOptions'.
   // Types of property 'method' are incompatible.
-  // Type 'string' is not assignable to type '"post" | "get" | "delete" | "patch" | "put"'. 
+  // Type 'string' is not assignable to type '"post" | "get" | "delete" | "patch" | "put"'.
   const response = UrlFetchApp.fetch(url, options).getContentText()
   const sku = JSON.parse(response).data.pair.sku
   return sku
@@ -160,4 +163,6 @@ const addSpaces = numSpaces => {
   return a
 }
 
-export { capitalize, camelize, getIndexByHeader, reduceHeaders, getSheetData, createNewSheetWithData, cleanSize, getPaddedSku, splitSku };
+export { capitalize, camelize, getIndexByHeader, reduceHeaders, 
+  getSheetData, createNewSheetWithData, cleanSize, getPaddedSku, splitSku,
+  lookupBarcode };

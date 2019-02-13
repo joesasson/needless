@@ -91,7 +91,7 @@ class SheetData {
     }
   }
 
-  getMetaData(customer){
+  getMetadata(customer){
     switch(customer){
       // case 'Amazon':
       //   break;
