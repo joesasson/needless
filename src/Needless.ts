@@ -23,9 +23,9 @@ function onOpen(e){
 }
 
 class SheetData {
-  data: [][]
-  content: [][]
-  headers: []
+  data: any[][]
+  content: any[][]
+  headers: any[]
   headerMap: {}
   transmissionType: String
   dataWidth: Number
@@ -76,7 +76,7 @@ class SheetData {
   }
 
   detectCustomer(){
-    const firstCell = this.data[0][0]
+    const firstCell: String = this.data[0][0]
     if(firstCell === "Trans Control No"){
       return 'Von Maur'
     } else if(firstCell === "Transaction #"){
@@ -133,7 +133,6 @@ class SheetData {
     }, [])
   }
 }
-
 
 export { SheetData }
 

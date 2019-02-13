@@ -15,12 +15,14 @@ describe("extractSalesOrder", () => {
   let nordstromData = parseDataString(nordstromString)
 
   describe('parseDataString', () => {
-    it("parseDataString converts hautelookString to array", () => {
+    it("converts hautelookString to 2d array", () => {
+      expect(nordstromData[0][0]).toBeDefined()
       expect(hautelookData.length).toBe(70)
       expect(hautelookData[44][9]).toBe('1609.31')
     })
 
-    it("parseString converts nordstromString to array", () => {
+    it("converts nordstromString to 2d array", () => {
+      expect(nordstromData[0][0]).toBeDefined()
       expect(nordstromData.length).toBe(9)
       expect(nordstromData[4][8]).toBe('VENDOR PAYS TOTAL FREIGHT')
     })
@@ -28,18 +30,18 @@ describe("extractSalesOrder", () => {
 
   describe('generateSalesOrder', () => {
     it("generates a Sales Order for Hautelook", () => {
-      let wrapped = new SheetData([hautelookData])
-      let salesOrder = generateSalesOrder(wrapped)
+      let mock = new SheetData(hautelookData)
+      let salesOrder = generateSalesOrder(mock)
       expect(salesOrder.length).toBe(31)
       expect(salesOrder[5][2]).toBe('30.0')
     })
   
-    // it("generate a Sales Order for Nordstrom Rack", () => {
-    //   let wrapped = new SheetData([nordstromData])
-    //   let salesOrder = generateSalesOrder(wrapped)
-    //   expect(salesOrder.length).toBe(9)
-    //   expect(salesOrder[4][8]).toBe("Nordstrom Rack")
-    // })
+    it("generate a Sales Order for Nordstrom Rack", () => {
+      let wrapped = new SheetData(nordstromData)
+      let salesOrder = generateSalesOrder(wrapped)
+      expect(salesOrder.length).toBe(9)
+      expect(salesOrder[4][8]).toBe("Nordstrom Rack")
+    })
   })
 
 })
@@ -50,11 +52,11 @@ function parseDataString(dataString) {
   // I think I can safely ignore the outer brackets
   // So I can put the rows by the contents of the inner brackets
   // While I'm doing that I can add quotations and output an empty element if it's empty - I need to research the effect of this
-  let newArray = []
-  let row = []
-  let cell = ""
-  let emptyCell = true
-  let afterBracket = false
+  let newArray: any[][] = []
+  let row: any[] = []
+  let cell: String = ""
+  let emptyCell: Boolean = true
+  let afterBracket: Boolean = false
 
   // `[[NORDSTROM PURCHASE ORDER, , , , , , , , , , , , , , ], 
   // [This Purchase Order is subject to Nordstrom Purchase Order Terms and Conditions., , , , , , , , , , , , , , ], 

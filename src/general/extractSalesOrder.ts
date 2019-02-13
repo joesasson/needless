@@ -1,13 +1,13 @@
-import { getSheetData, reduceHeaders, createNewSheetWithData } from './utils'
-import { SheetData } from './Needless'
+import { getSheetData, reduceHeaders, createNewSheetWithData } from '../utils'
+import { SheetData } from '../Needless'
 
 function extractSalesOrder() {
   let { ss, sheetData } = getSheetData(); 
   const wrapped = new SheetData(sheetData); 
+  // Logger.log({ sheetData })
   
   // call a function here that will return the new data and set it in this function
   const newData = generateSalesOrder(wrapped);
-  // Logger.log({ sheetData })
   // Logger.log({ newData })
 
   createNewSheetWithData(ss, newData, "Quickbooks Import");
