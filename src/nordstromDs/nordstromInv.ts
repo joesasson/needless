@@ -4,7 +4,7 @@ function nordstromInv() {
   // remove the rows that have no stock in the in stock column
   // combine the first and last name columns into a new column with the title "name"
   const { ss, sheetData } = getSheetData()
-  createNewSheetWithData(ss, [['']], "Tracking")
+  createNewSheetWithData(ss, [addSpaces(41)], "Tracking")
   const wrapped = new SheetData(sheetData)
   const { retailer_create_date, po_number, ship_first_name, ship_last_name, ship_address_1, ship_address_2
   ship_city, ship_region, ship_postal, ship_country, ship_method, line_item_sku, line_item_expected_cost
