@@ -30,6 +30,8 @@ class SheetData {
   transmissionType: String
   dataWidth: Number
   dataHeight: Number
+  customer: string
+  indices: any
 
   constructor(data){
     // remove first row if there is a 'sep=' in the first cell
@@ -53,7 +55,7 @@ class SheetData {
   }
 
   reduceHeaders(){
-    return this.headers.reduce((columns, header, i) => {
+    return this.indices = this.headers.reduce((columns, header, i) => {
       let camelizedHeader = camelize(header)
       columns[camelizedHeader] = i
       return columns
@@ -78,17 +80,18 @@ class SheetData {
   detectCustomer(){
     const firstCell: String = this.data[0][0]
     if(firstCell === "Trans Control No"){
-      return 'Von Maur'
+      this.customer = 'Von Maur'
     } else if(firstCell === "Transaction #"){
-      return 'Nordstrom Rack'
+      this.customer = 'Nordstrom Rack'
     } else if(firstCell === 'Sku'){
       // We're in an amazon po
-      return 'Amazon'
+      this.customer = 'Amazon'
     } else if(firstCell === 'NORDSTROM PURCHASE ORDER') {
-      return 'Nordstromrack.com/Hautelook'
+      this.customer = 'Nordstromrack.com/Hautelook'
     } else{
       throw new Error("Customer not found")
     }
+    return this.customer
   }
 
   getMetadata(customer){

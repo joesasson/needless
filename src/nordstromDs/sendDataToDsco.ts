@@ -35,7 +35,7 @@ function sendDataToDsco() {
     const dsco_id = row[dsco_order_id]
     const po = row[po_number]
     const trackingNum = row[tracking]
-    const sku = row[line_item_sku]
+    const sku = row[line_item_sku].replace("CHRN", "CHR")
     const qty = row[line_item_quantity]
     const shipMethod = row[ship_method]
     const isLastItem = i === self.length - 1 || row[po_number] !== self[i + 1][po_number] // po number doesn't match next row's po number
@@ -80,7 +80,7 @@ function sendDataToDsco() {
     const poNumber = row[po_number]
     const invoiceId = row[invoice]
     const quantity = row[line_item_quantity]
-    const sku = row[line_item_sku]
+    const sku = row[line_item_sku].replace("CHRN", "CHR")
     const unitPrice = row[line_item_expected_cost]
     const isLastItem = i === self.length - 1 || row[po_number] !== self[i + 1][po_number] // po number doesn't match next row's po number
     

@@ -1,5 +1,5 @@
 import { SheetData } from '../Needless'
-import { generateSalesOrder } from '../general/extractSalesOrder'
+import { generateSalesOrder, SalesOrderExtractor } from '../general/extractSalesOrder'
 import {
   getSheetData, reduceHeaders
 } from '../utils'
@@ -35,26 +35,42 @@ describe("extractSalesOrder", () => {
 
   describe('generateSalesOrder', () => {
     it("generates a Sales Order for Hautelook", () => {
-      let mock = new SheetData(hautelookData)
+      let mock = new SalesOrderExtractor(hautelookData)
       let salesOrder = generateSalesOrder(mock)
       expect(salesOrder.length).toBe(31)
       expect(salesOrder[5][2]).toBe('30.0')
     })
   
     it("generates a Sales Order for Nordstrom Rack", () => {
-      let wrapped = new SheetData(nordstromData)
+      let wrapped = new SalesOrderExtractor(nordstromData)
       let salesOrder = generateSalesOrder(wrapped)
       expect(salesOrder.length).toBe(9)
       expect(salesOrder[4][8]).toBe("Nordstrom Rack")
     })
 
     it("generates a Sales Order for Von Maur", () => {
-      let wrapped = new SheetData(vonMaurData)
+      let wrapped = new SalesOrderExtractor(vonMaurData)
       let salesOrder = generateSalesOrder(wrapped)
       expect(salesOrder.length).toBe(9)
       // expect(salesOrder[8][4]).toBe('811841.0-6.0') // meta (PO#)
       expect(salesOrder[8][1]).toBe('8.43710177057E11') // detail (upc)
     })
+  })
+
+  describe("class SalesOrderExtractor", () => {
+    let wrapped = new SalesOrderExtractor(hautelookData)
+    describe("detectCustomer()", () => {
+      it("sets a customer for this", () => {
+        let customer = wrapped.detectCustomer()
+        expect(wrapped.customer).toBe('Nordstromrack.com/Hautelook')
+      })
+    })
+    // describe("reduceHeaders()", () => {
+    //   it("gets Metadata based on this.customer", () => {
+    //     let metadata = wrapped.getMetadata()
+    //     expect(wrapped.)
+    //   })
+    // })
   })
 
 })

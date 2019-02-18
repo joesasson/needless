@@ -3,58 +3,26 @@ import { SheetData } from '../Needless'
 
 function extractSalesOrder() {
   let { ss, sheetData } = getSheetData(); 
-  const wrapped = new SheetData(sheetData); 
-  Logger.log({ sheetData })
+  // Logger.log({ sheetData })
+  const extractorWrapper = new SalesOrderExtractor(sheetData); 
   
-  // call a function here that will return the new data and set it in this function
-  const newData = generateSalesOrder(wrapped);
+  const newData = generateSalesOrder(extractorWrapper);
   // Logger.log({ newData })
 
   createNewSheetWithData(ss, newData, "Quickbooks Import");
 }
 
-const generateSalesOrder = sheetData => {
-  let indices = sheetData.reduceHeaders();
-  let customer = sheetData.detectCustomer()
+const generateSalesOrder = sourceData => {
+  // get Source Data
+  let indices = sourceData.reduceHeaders();
+  let customer = sourceData.detectCustomer()
 
-  let masterPo;
-  let ship_date;
-  let cancel_date;
-  let carrier;
-  let date;
-
-  // constants based on customer
-  switch (customer) {
-    case "Nordstrom Rack":
-      masterPo = sheetData.data[1][indices.po];
-      ship_date = sheetData.data[1][indices.shipNotBefore];
-      cancel_date = sheetData.data[1][indices.cancelAfter];
-      carrier = "Gilbert East";
-      date = ship_date;
-      break;
-    case "Nordstromrack.com/Hautelook":
-      masterPo = sheetData.data[16][2];
-      ship_date = sheetData.data[13][2];
-      cancel_date = sheetData.data[14][2];
-      carrier = "XPOLOGISTICS";
-      date = ship_date;
-      break;
-    case 'Von Maur':
-      masterPo = sheetData.data[1][indices.poNumber]
-      ship_date = sheetData.data[1][indices.shipNotBefore]
-      cancel_date = sheetData.data[1][indices.cancelAfter];
-      carrier = 'TGIR'
-      date = ship_date
-      break;
-    default:
-      Logger.log("Customer not found");
-  }
+  const { masterPo, ship_date, cancel_date, carrier, date } = sourceData.getSourceMetadata()
 
   let globalStyle;
   let globalRate;
 
-  // final result
-  let newData = sheetData.data
+  let newData = sourceData.data
     .map((row, i) => {
       let style;
       let size;
@@ -67,9 +35,9 @@ const generateSalesOrder = sheetData => {
       let shipTo1 = "";
       let shipTo2 = "";
       let address;
-      let city;
-      let state;
-      let zip;
+      let city = "";
+      let state = "";
+      let zip = "";
 
       // headers
       if (i === 0)
@@ -84,11 +52,14 @@ const generateSalesOrder = sheetData => {
           "cancel_date",
           "customer",
           "carrier",
-          "Ship To 1",
-          "Ship To 2"
+          "Ship To Name",
+          "Ship To 2",
+          "City",
+          "State",
+          "Zip"
         ];
 
-      // details based on customer
+      // get line details
       switch (customer) {
         case "Nordstrom Rack":
           style = row[indices.vendorStyle];
@@ -99,7 +70,7 @@ const generateSalesOrder = sheetData => {
           rate = row[indices.unitPrice];
           store = row[indices.store];
           po = `${masterPo}-${store}`;
-          shipTo1 = row[indices.shipToLocation]; // dc #
+          shipTo1 = row[indices.shipToLocation];
           // shipping address
           address = row[indices.shipToAddress];
           city = row[indices.shipToCity];
@@ -109,7 +80,7 @@ const generateSalesOrder = sheetData => {
           break;
         case "Nordstromrack.com/Hautelook":
           // skip rows before 27
-          const newIndices = reduceHeaders(sheetData.data, 26);
+          const newIndices = reduceHeaders(sourceData.data, 26);
           const firstRowOfDetails = 27;
           if (i < firstRowOfDetails) return null;
           let styleVal = row[newIndices.vpn];
@@ -147,7 +118,7 @@ const generateSalesOrder = sheetData => {
           sku = lookupBarcode(upc)
           break;
         default:
-          Logger.log("Customer not found");
+          // Logger.log("Customer not found");
       }
 
       return [  
@@ -162,7 +133,10 @@ const generateSalesOrder = sheetData => {
         customer,
         carrier,
         shipTo1,
-        shipTo2
+        shipTo2,
+        city,
+        state,
+        zip
       ];
     })
     .filter(x => x);
@@ -170,4 +144,41 @@ const generateSalesOrder = sheetData => {
   return newData;
 };
 
-export { generateSalesOrder };
+class SalesOrderExtractor extends SheetData {
+  constructor(sourceData){
+    super(sourceData)
+  }
+  
+  getSourceMetadata(){
+    let masterPo, ship_date, cancel_date, carrier, date
+    switch (this.customer) {
+      case "Nordstrom Rack":
+        masterPo = this.data[1][this.indices.po];
+        ship_date = this.data[1][this.indices.shipNotBefore];
+        cancel_date = this.data[1][this.indices.cancelAfter];
+        carrier = "Gilbert East";
+        date = ship_date;     
+        return { masterPo, ship_date, cancel_date, carrier, date }
+      case "Nordstromrack.com/Hautelook":
+        masterPo = this.data[16][2];
+        ship_date = this.data[13][2];
+        cancel_date = this.data[14][2];
+        carrier = "XPOLOGISTICS";
+        date = ship_date;
+        return { masterPo, ship_date, cancel_date, carrier, date }
+      case 'Von Maur':
+        masterPo = this.data[1][this.indices.poNumber]
+        ship_date = this.data[1][this.indices.shipNotBefore]
+        cancel_date = this.data[1][this.indices.cancelAfter];
+        carrier = 'TGIR'
+        date = ship_date
+        return { masterPo, ship_date, cancel_date, carrier, date }
+      default:
+        return { error: new Error("Customer Not Found") }
+    }
+    
+  }
+}
+
+
+export { generateSalesOrder, SalesOrderExtractor };
