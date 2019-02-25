@@ -163,6 +163,13 @@ const addSpaces = numSpaces => {
   return a
 }
 
+const padZip = (zip: string) => {
+  if(zip.length < 5){
+    return `'0${zip}`
+  }
+  return zip
+}
+
 export { capitalize, camelize, getIndexByHeader, reduceHeaders, 
   getSheetData, createNewSheetWithData, cleanSize, getPaddedSku, splitSku,
   lookupBarcode };

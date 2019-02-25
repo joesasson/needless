@@ -70,7 +70,7 @@ function nordstromInv() {
     let weight = calculateWeight(row[line_item_quantity])
     let shipMethod = row[ship_method] === "2nd Day Air" ? "2" : "3" // if method is not 2nd day air, assume it's ground
     let phone = row[ship_phone] === 0 ? '' : row[ship_phone]
-    let zip = `'${row[ship_postal]}` // add apostrophe  to prevent truncating in google sheets
+    let zip = padZip(row[ship_postal]) // add apostrophe to prevent truncating in google sheets
     return [
       " ", // empty space for company
       name,

@@ -14,6 +14,9 @@
   "scripts": {
     "test": "jest --watch"
   },
+  "jest": {
+    "testEnvironment": "node"
+  },
   "author": "Joe Sasson <joesasson@marcjosephnewyork.com> (joesasson.github.io)",
   "license": "MIT"
 }

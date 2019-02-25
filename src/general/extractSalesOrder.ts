@@ -14,129 +14,62 @@ function extractSalesOrder() {
 
 const generateSalesOrder = sourceData => {
   // get Source Data
-  let indices = sourceData.reduceHeaders();
-  let customer = sourceData.detectCustomer()
-
-  const { masterPo, ship_date, cancel_date, carrier, date } = sourceData.getSourceMetadata()
-
-  let globalStyle;
-  let globalRate;
-
+  let customer = sourceData.customer;
+  
+  const { ship_date, cancel_date, carrier, date } = sourceData.getSourceMetadata()
+  
   let newData = sourceData.data
-    .map((row, i) => {
-      let style;
-      let size;
-      let upc = "";
-      let sku;
-      let qty;
-      let rate;
-      let store;
-      let po;
-      let shipTo1 = "";
-      let shipTo2 = "";
-      let address;
-      let city = "";
-      let state = "";
-      let zip = "";
+  .map((row, i) => {
+    
+    // headers
+    if (i === 0)
+      return [
+        "sku",
+        "upc",
+        "qty",
+        "rate",
+        "po",
+        "date",
+        "ship_date",
+        "cancel_date",
+        "customer",
+        "carrier",
+        "Ship To 1",
+        "Ship To 2",
+        "City",
+        "State",
+        "Zip"
+      ];
 
-      // headers
-      if (i === 0)
-        return [
-          "sku",
-          "upc",
-          "qty",
-          "rate",
-          "po",
-          "date",
-          "ship_date",
-          "cancel_date",
-          "customer",
-          "carrier",
-          "Ship To Name",
-          "Ship To 2",
-          "City",
-          "State",
-          "Zip"
-        ];
-
-      // get line details
-      switch (customer) {
-        case "Nordstrom Rack":
-          style = row[indices.vendorStyle];
-          size = row[indices.vendorSizeDescription];
-          upc = row[indices.productId];
-          sku = `${style}_${size}`;
-          qty = row[indices.orderedQty];
-          rate = row[indices.unitPrice];
-          store = row[indices.store];
-          po = `${masterPo}-${store}`;
-          shipTo1 = row[indices.shipToLocation];
-          // shipping address
-          address = row[indices.shipToAddress];
-          city = row[indices.shipToCity];
-          state = row[indices.shipToState];
-          zip = row[indices.shipToZipcode];
-          shipTo2 = `${address} ${city}, ${state} ${zip}`;
-          break;
-        case "Nordstromrack.com/Hautelook":
-          // skip rows before 27
-          const newIndices = reduceHeaders(sourceData.data, 26);
-          const firstRowOfDetails = 27;
-          if (i < firstRowOfDetails) return null;
-          let styleVal = row[newIndices.vpn];
-          size = row[newIndices.size1];
-          // return if
-          // style contains total
-          // style and size are both empty
-          if (
-            styleVal.toLowerCase().indexOf("total") > -1 ||
-            (styleVal === "" && size === "")
-          ) {
-            return null;
-          }
-          // find row with a style
-          // set the style and rate until the next style is found
-          if (styleVal !== "") {
-            globalStyle = styleVal;
-            globalRate = row[newIndices.unitCost];
-            return null;
-          }
-
-          style = globalStyle;
-          sku = `${style}_${size}`;
-          qty = row[newIndices.ttlUnits];
-          store = row[newIndices.store];
-          po = masterPo;
-          rate = globalRate;
-          break;
-        case 'Von Maur':
-          store = row[indices.buyerStoreNo]
-          po = `${masterPo}-${store}`
-          qty = row[indices.qtyOrdered]
-          upc = row[indices.productCode]
-          rate = row[indices.unitPrice]
-          sku = lookupBarcode(upc)
-          break;
-        default:
-          // Logger.log("Customer not found");
+    // get line details
+      let lineDetails = sourceData.getSourceLineDetails(row, i)
+      if(!lineDetails){
+        return null
       }
+      let { style, size, upc, sku, qty, 
+        rate, store, po, shipTo1, shipTo2,
+        address, city, state, zip
+      } = lineDetails
 
+
+      
+      // compose rows with variables from getSourceLineDetails
       return [  
         sku,
-        upc,
+        upc || '',
         qty,
-        rate,
+        rate || '',
         po,
         date,
         ship_date,
         cancel_date,
         customer,
-        carrier,
-        shipTo1,
-        shipTo2,
-        city,
-        state,
-        zip
+        carrier || '',
+        shipTo1 || '',
+        shipTo2 || '',
+        city || '',
+        state || '',
+        zip || ''
       ];
     })
     .filter(x => x);
@@ -145,10 +78,20 @@ const generateSalesOrder = sourceData => {
 };
 
 class SalesOrderExtractor extends SheetData {
+  metadata: any
+  globalStyle: string
+  globalRate: string
+  color: string
+  styleName: string
+
   constructor(sourceData){
     super(sourceData)
+
+    this.getSourceMetadata()
+    this.globalStyle = ''
+    this.globalRate = ''
   }
-  
+
   getSourceMetadata(){
     let masterPo, ship_date, cancel_date, carrier, date
     switch (this.customer) {
@@ -157,26 +100,116 @@ class SalesOrderExtractor extends SheetData {
         ship_date = this.data[1][this.indices.shipNotBefore];
         cancel_date = this.data[1][this.indices.cancelAfter];
         carrier = "Gilbert East";
-        date = ship_date;     
-        return { masterPo, ship_date, cancel_date, carrier, date }
+        date = ship_date;
+        this.metadata = { masterPo, ship_date, cancel_date, carrier, date }
+        break;
       case "Nordstromrack.com/Hautelook":
         masterPo = this.data[16][2];
         ship_date = this.data[13][2];
         cancel_date = this.data[14][2];
         carrier = "XPOLOGISTICS";
         date = ship_date;
-        return { masterPo, ship_date, cancel_date, carrier, date }
+        this.metadata = { masterPo, ship_date, cancel_date, carrier, date }
+        break;
       case 'Von Maur':
         masterPo = this.data[1][this.indices.poNumber]
         ship_date = this.data[1][this.indices.shipNotBefore]
         cancel_date = this.data[1][this.indices.cancelAfter];
         carrier = 'TGIR'
         date = ship_date
-        return { masterPo, ship_date, cancel_date, carrier, date }
+        this.metadata = { masterPo, ship_date, cancel_date, carrier, date }
+        break;
       default:
         return { error: new Error("Customer Not Found") }
-    }
+    } 
+    return this.metadata 
+  }
+
+  getSourceTabularData(){
+    // returns a new 2d array with all of the tabular data after transformation
+    // maybe I should allow an argument for headers so that I can get the data starting from a specific row
     
+  }
+  
+  getSourceLineDetails(row, i){
+    // get line details
+    let style, size, upc, sku, qty,
+        rate, store, po, shipTo1,
+        shipTo2, address, city, state, zip,
+        title, lineDetails
+    switch (this.customer) {
+      case "Nordstrom Rack":
+        style = row[this.indices.vendorStyle];
+        size = row[this.indices.vendorSizeDescription];
+        upc = row[this.indices.productId];
+        sku = `${style}_${size}`;
+        title = row[this.indices.productDescription]
+        qty = row[this.indices.orderedQty];
+        rate = row[this.indices.unitPrice];
+        store = row[this.indices.store];
+        po = `${this.metadata.masterPo}-${store}`;
+        shipTo1 = row[this.indices.shipToLocation];
+        shipTo2 = row[this.indices.shipToAddress];
+        // shipping address
+        city = row[this.indices.shipToCity];
+        state = row[this.indices.shipToState];
+        zip = row[this.indices.shipToZipcode];
+        lineDetails = { style, size, upc, sku, qty,
+          rate, store, po, shipTo1,
+          shipTo2, address, city, state, zip, title }
+        break;
+      case "Nordstromrack.com/Hautelook":
+        // skip rows before 27
+        const headerRow = 26;
+        if (i <= headerRow) return;
+        let styleVal = row[this.indices.vpn];
+        let color = row[this.indices.color]
+        let styleName = row[this.indices.vpnDescription]
+        size = row[this.indices.size1];
+        // return if
+        // style contains total
+        // style and size are both empty
+        const isTotalRow = styleVal.toLowerCase().indexOf("total") > -1 ||
+        (styleVal === "" && size === "")
+        if (isTotalRow) {
+          return;
+        }
+        // find row with a style
+        // set the style and rate until the next style is found
+        if (styleVal !== "") {
+          this.globalStyle = styleVal;
+          this.globalRate = row[this.indices.unitCost];
+          this.styleName = styleName
+          this.color = color
+          return;
+        }
+        styleName = this.styleName
+        color = this.color
+        style = this.globalStyle;
+        sku = `${style}_${size}`;
+        qty = row[this.indices.ttlUnits];
+        store = row[this.indices.store];
+        po = this.metadata.masterPo;
+        rate = this.globalRate;
+        lineDetails = { style, size, upc, sku, qty,
+          rate, store, po, shipTo1,
+          shipTo2, address, city, state, zip, styleName, color }
+        break;
+      case 'Von Maur':
+        store = row[this.indices.buyerStoreNo]
+        po = `${this.metadata.masterPo}-${store}`
+        qty = row[this.indices.qtyOrdered]
+        upc = row[this.indices.productCode]
+        rate = row[this.indices.unitPrice]
+        sku = lookupBarcode(upc)
+        lineDetails = { style, size, upc, sku, qty,
+          rate, store, po, shipTo1,
+          shipTo2, address, city, state, zip }
+        break;
+      default:
+        // Logger.log("Customer not found");
+    }
+    return lineDetails
   }
 }
 

@@ -1,18 +1,33 @@
+import { SalesOrderExtractor } from './extractSalesOrder'
+import { getSheetData, lookupBarcode, getPaddedSku, createNewSheetWithData } from '../utils'
+
 function generatePicklist() {
   const { ss, sheetData } = getSheetData();
-  const wrapped = new SheetData(sheetData);
+
+  const wrapped = new PicklistGenerator(sheetData);
   // von maur uses buyerStoreNo as header for store
   const customer = wrapped.detectCustomer()
   // Source Transformations
+  let stores = wrapped.getUniqueStores();
+  let newData
+  if(stores.length > 1){
+    newData = generateMultistorePicklist(wrapped, customer, stores)
+  } else {
+    newData = generateSimplePicklist(wrapped)
+  }
 
-  // Target
+  let newSheet = createNewSheetWithData(ss, newData,  `${customer} - Picklist`);
+  newSheet.getDataRange().applyRowBanding()
+  newSheet.autoResizeColumns(1, 3)
+}
 
-  // let metadata = [['Customer'], ['PO #'], ['Start Ship Date'], ["Cancel Date"]]
+// Target
+function generateMultistorePicklist(wrapped, customer, stores){
+    // let metadata = [['Customer'], ['PO #'], ['Start Ship Date'], ["Cancel Date"]]
   // map sku@store - qty pairs
   let qtys = collectQtys(wrapped, customer);
 
   // set up columns
-  let stores = getUniqueStores(wrapped, customer);
   let doneSkus = [];
   let cachedSkus = {}
   // loop through rows and set sku in first column and qty based on sku + column name
@@ -63,7 +78,34 @@ function generatePicklist() {
   // sku        store1 store2 total
   // 14598-b_5  5       3     8
   // 14598-b_9  3       1     4
-  createNewSheetWithData(ss, newData,  `${customer} - Picklist`);
+  return newData
+}
+
+function generateSimplePicklist(wrapped){
+  // we have metadata in the wrapper
+  // we just need to get the line details
+  // and add the title
+  return wrapped.data.map((row, i) => {
+    if(i === 0){
+      return ["Sku", "Title", "Qty"]
+    }
+    let lineDetails = wrapped.getSourceLineDetails(row, i)
+    if(!lineDetails){
+      return null
+    }
+    let {
+      sku, qty, styleName, color, title
+    } = lineDetails
+
+    title = title || `${styleName} - ${color}`
+  
+
+    return [
+      sku,
+      title,
+      qty,
+    ]
+  }).filter(x => x)
 }
 
 const collectQtys = (sheetData, customer) => {
@@ -121,6 +163,8 @@ const getUniqueStores = (sheetData, customer) =>
         store = indices.buyerStoreNo 
       } else if(customer === 'Nordstrom Rack') {
         store = indices.store
+      } else {
+        store = '0'
       }
 
       if (stores.indexOf(row[store]) > -1) {
@@ -130,4 +174,31 @@ const getUniqueStores = (sheetData, customer) =>
     }, [])
     .sort((a, b) => a - b);
 
+export class PicklistGenerator extends SalesOrderExtractor{
+  constructor(sheetData){
+    super(sheetData)
+  }
+
+  getUniqueStores(){
+    return this.data
+      .reduce((stores, row, i) => {
+        if (i === 0) return stores;
+        let store = ''
+        if(this.customer === 'Von Maur'){
+          store = this.indices.buyerStoreNo 
+        } else if(this.customer === 'Nordstrom Rack') {
+          store = this.indices.store
+        } else {
+          return stores 
+        }
+  
+        if (stores.indexOf(row[store]) > -1) {
+          return stores;
+        }
+        return [...stores, row[store]];
+      }, [])
+      .sort((a, b) => a - b);
+  }
+
+}
     

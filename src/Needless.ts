@@ -30,8 +30,9 @@ class SheetData {
   transmissionType: String
   dataWidth: Number
   dataHeight: Number
-  customer: string
+  customer: String
   indices: any
+  headerRow: any
 
   constructor(data){
     // remove first row if there is a 'sep=' in the first cell
@@ -42,10 +43,10 @@ class SheetData {
       this.data = data
     }
     this.content = this.data.slice(1)
-    this.headers = this.data[0]
-    this.headerMap = this.reduceHeaders()
     this.dataWidth = this.data[0].length
     this.dataHeight = this.data.length
+    this.customer = this.detectCustomer()
+    this.reduceHeaders()
   }
 
   extractColumnsByIndex(indices: Number[]){
@@ -55,6 +56,7 @@ class SheetData {
   }
 
   reduceHeaders(){
+    this.setHeaders()
     return this.indices = this.headers.reduce((columns, header, i) => {
       let camelizedHeader = camelize(header)
       columns[camelizedHeader] = i
@@ -79,32 +81,44 @@ class SheetData {
 
   detectCustomer(){
     const firstCell: String = this.data[0][0]
-    if(firstCell === "Trans Control No"){
-      this.customer = 'Von Maur'
-    } else if(firstCell === "Transaction #"){
-      this.customer = 'Nordstrom Rack'
-    } else if(firstCell === 'Sku'){
-      // We're in an amazon po
-      this.customer = 'Amazon'
-    } else if(firstCell === 'NORDSTROM PURCHASE ORDER') {
-      this.customer = 'Nordstromrack.com/Hautelook'
-    } else{
-      throw new Error("Customer not found")
+    switch(firstCell){
+      case "Trans Control No":
+        // Von Maur EDI
+        this.customer = 'Von Maur'
+        break
+      case "Transaction #":
+        // Nordstrom Rack EDI
+        this.customer = 'Nordstrom Rack'
+        break
+      case 'Sku':
+        // amazon po
+        this.customer = 'Amazon'
+        break
+      case 'NORDSTROM PURCHASE ORDER':
+        // Hautelook spreadsheet PO
+        this.customer = 'Nordstromrack.com/Hautelook'
+        break
+      default:
+        this.customer = null
     }
+    
     return this.customer
   }
 
-  getMetadata(customer){
-    switch(customer){
-      // case 'Amazon':
-      //   break;
+  setHeaders(){
+    switch(this.customer){
       case 'Von Maur':
-        break;
       case 'Nordstrom Rack':
-        break;
+      case 'Amazon':
+        this.headerRow = 0
+        break
+      case 'Nordstromrack.com/Hautelook':
+        this.headerRow = 26
+        break
       default:
-        break;
+        this.headerRow = 0
     }
+    this.headers = this.data[this.headerRow]
   }
 
   dateFilter(filterDate) {
