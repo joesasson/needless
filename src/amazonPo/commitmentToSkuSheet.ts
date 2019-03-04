@@ -13,7 +13,7 @@ function commitmentToSkuSheet(){
     modelNumber: style,
     sizeName: size,
     modelName // same as styleName
-  } = newData.headerMap
+  } = newData.reduceHeaders()
 
   newData.removeDuplicatesByUpc()
 

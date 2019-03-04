@@ -14,11 +14,13 @@ function nordstromPicklist(){
   let extracted = wrapped.extractColumnsByIndex(indices)
   extracted = extracted.map((row, i) => {
     if(i === 0){
-      return [...row, "in stock"]
+      return [...row]
     }
-    return [...row, ""]
+    return [...row]
   })
   // TODO: sort by sku
 
-  createNewSheetWithData(ss, extracted, "Nordstrom Dropship Picklist")
+  let newSheet = createNewSheetWithData(ss, extracted, "Nordstrom Dropship Picklist")
+  newSheet.getDataRange().applyRowBanding()
+  newSheet.autoResizeColumns(1, 4)
 }

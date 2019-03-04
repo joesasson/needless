@@ -99,7 +99,6 @@ function generateSimplePicklist(wrapped){
 
     title = title || `${styleName} - ${color}`
   
-
     return [
       sku,
       title,

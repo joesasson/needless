@@ -15,9 +15,10 @@ function onOpen(e){
       .addItem("Remove Empty Columns", "removeEmptyColumns")
       .addItem("Extract Sales Order/Invoice Details", "extractSalesOrder")
       .addItem("Generate Packing Slip", "generatePackingSlip")
-    )
-      .addSubMenu(SpreadsheetApp.getUi().createMenu('General Shipping')
       .addItem("Generate Picklist", "generatePicklist")
+    )
+    .addSubMenu(SpreadsheetApp.getUi().createMenu('Shopify')
+      .addItem("Extract Shopify Invoice and Credit Details", "extractShopifyInvoice")
     )
     .addToUi();
 }
@@ -46,7 +47,7 @@ class SheetData {
     this.dataWidth = this.data[0].length
     this.dataHeight = this.data.length
     this.customer = this.detectCustomer()
-    this.reduceHeaders()
+    this.headerMap = this.reduceHeaders()
   }
 
   extractColumnsByIndex(indices: Number[]){
