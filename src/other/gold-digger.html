@@ -1,0 +1,41 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+      <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <base target="_top">
+  </head>
+  <body>
+    <form id="headers-form" >
+
+    </form>
+    <script>
+      google.script.run.withSuccessHandler(outputHeaders).getHeaders()
+
+      function outputHeaders(headers) {
+        let headersForm = document.getElementById("headers-form")
+        let formGroup = document.createElement("div")
+        formGroup.className = "form-group form-check"
+        headers.forEach((header, i) => {
+          let input = document.createElement("input")
+          let label = document.createElement('label')
+          input.id = `header-${i}`
+          input.type = 'checkbox'
+          input.class = 'form-check-input'
+          input.value = header
+          label.htmlFor = input.id
+          label.textContent = header
+          label.class = 'form-check-label'
+          formGroup.append(input)
+          formGroup.append(label)
+          headersForm.append(formGroup)
+          let submitButton = document.createElement("button")
+          submitButton.type = 'submit'
+          submitButton.class = "btn btn-primary"
+        });
+        headersForm.append(submitButton)
+        
+      }
+    </script>
+  </body>
+</html>

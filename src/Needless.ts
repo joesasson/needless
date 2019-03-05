@@ -16,9 +16,15 @@ function onOpen(e){
       .addItem("Extract Sales Order/Invoice Details", "extractSalesOrder")
       .addItem("Generate Packing Slip", "generatePackingSlip")
       .addItem("Generate Picklist", "generatePicklist")
+      .addItem("Extract Selected Columns", "extractSelectedColumns")
     )
     .addSubMenu(SpreadsheetApp.getUi().createMenu('Shopify')
       .addItem("Extract Shopify Invoice and Credit Details", "extractShopifyInvoice")
+    )
+    .addSubMenu(SpreadsheetApp.getUi().createMenu("Other")
+      .addItem("Generate Hautelook Packing Slip", "generateHautelookPackingSlip")
+      .addItem("Open Gold Digger", "goldDigger")
+      .addItem("Log Sheet", 'logSheet')
     )
     .addToUi();
 }
@@ -49,6 +55,7 @@ class SheetData {
     this.customer = this.detectCustomer()
     this.headerMap = this.reduceHeaders()
   }
+
 
   extractColumnsByIndex(indices: Number[]){
     return this.data.map(row => {

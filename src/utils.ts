@@ -108,6 +108,13 @@ function getSheetData(name='') {
 
 }
 
+function logSheet(){
+  let { sheetData } = getSheetData()
+  // Logger.log(sheetData)
+  let html = HtmlService.createHtmlOutput(`${sheetData}`)
+  SpreadsheetApp.getUi().showModalDialog(html, "Log")
+}
+
 export const mapHeaders = data => {
   let headers = data[0];
   let headerMap = headers.map((header, i) => {
