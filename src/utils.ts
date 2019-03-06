@@ -110,9 +110,12 @@ function getSheetData(name='') {
 
 function logSheet(){
   let { sheetData } = getSheetData()
-  // Logger.log(sheetData)
-  let html = HtmlService.createHtmlOutput(`${sheetData}`)
-  SpreadsheetApp.getUi().showModalDialog(html, "Log")
+  showModal(sheetData, "Log")
+}
+
+function showModal(message, title){
+  let html = HtmlService.createHtmlOutput(`${message}`)
+  SpreadsheetApp.getUi().showModalDialog(html, title)
 }
 
 export const mapHeaders = data => {

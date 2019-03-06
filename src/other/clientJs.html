@@ -1,0 +1,50 @@
+<script>
+  google.script.run.withSuccessHandler(outputHeadersForm).getHeaders()
+  
+  function outputHeadersForm(headers) {
+    let headersForm = document.getElementById("headers-form")
+    let formGroup = document.createElement("div")
+    headers.forEach((header, i) => {
+      let p = document.createElement('p')
+      let label = document.createElement('label')
+      let input = document.createElement("input")
+      let span = document.createElement('span')
+      input.id = `header-${i}`
+      input.type = 'checkbox'
+      span.textContent = header
+      label.htmlFor = input.id
+  
+      formGroup.append(p)
+      p.appendChild(label)
+      label.appendChild(input)
+      label.appendChild(span)
+      headersForm.appendChild(formGroup)         
+    });
+  
+    let submitButton = document.createElement("button")
+    submitButton.type = 'submit'
+    submitButton.className = "btn waves-effect -waves-light"
+    submitButton.textContent = "Extract"
+    headersForm.append(submitButton)
+    headersForm.addEventListener("submit", submitHandler)
+  }
+  
+  function submitHandler(e){
+    e.preventDefault()
+    // add checked elements to an array
+    // get all input children
+    let inputs = e.currentTarget.querySelectorAll('input')
+    // loop through input elements
+    let inputsArray = Array.from(inputs)
+    let checked = inputsArray.filter(input => input.checked)
+    let ids = checked.map(input => input.id)
+    // filter by checked
+    google.script.run.withSuccessHandler(confirmSuccess).processHeadersForm(ids)
+  }
+  
+  function confirmSuccess(message){
+    let p = document.createElement('p')
+    p.textContent = message
+    headersForm.append(p)
+  }
+</script>

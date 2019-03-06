@@ -2,40 +2,18 @@
 <!DOCTYPE html>
 <html>
   <head>
-      <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+     <!-- Compiled and minified CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- Compiled and minified JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
     <base target="_top">
   </head>
   <body>
-    <form id="headers-form" >
+    <h4 style="padding: 10px">Select the columns that you want</h4>
+    <form id="headers-form" style="padding: 10px" action="#">
 
     </form>
-    <script>
-      google.script.run.withSuccessHandler(outputHeaders).getHeaders()
-
-      function outputHeaders(headers) {
-        let headersForm = document.getElementById("headers-form")
-        let formGroup = document.createElement("div")
-        formGroup.className = "form-group form-check"
-        headers.forEach((header, i) => {
-          let input = document.createElement("input")
-          let label = document.createElement('label')
-          input.id = `header-${i}`
-          input.type = 'checkbox'
-          input.class = 'form-check-input'
-          input.value = header
-          label.htmlFor = input.id
-          label.textContent = header
-          label.class = 'form-check-label'
-          formGroup.append(input)
-          formGroup.append(label)
-          headersForm.append(formGroup)
-          let submitButton = document.createElement("button")
-          submitButton.type = 'submit'
-          submitButton.class = "btn btn-primary"
-        });
-        headersForm.append(submitButton)
-        
-      }
-    </script>
+    <?!= include('src/other/clientJs'); ?>
   </body>
 </html>
