@@ -4,6 +4,19 @@
   function outputHeadersForm(headers) {
     let headersForm = document.getElementById("headers-form")
     let formGroup = document.createElement("div")
+
+    // create and append the select all/none checkbox
+    let selectAllP = document.createElement('p')
+    let selectAllLabel = document.createElement("label")
+    let selectAllInput = document.createElement("input")
+    let selectAllSpan = document.createElement("span")
+    selectAllInput.id = "master-option"
+    selectAllInput.type = "checkbox"
+    selectAllLabel.htmlFor = selectAllInput.id
+    selectAllSpan.textContent = 'Select All/None'
+    selectAllLabel.appendChild(selectAllInput)
+    formGroup.appendChild(selectAllP).appendChild(selectAllLabel).appendChild(selectAllSpan)
+
     headers.forEach((header, i) => {
       let p = document.createElement('p')
       let label = document.createElement('label')
@@ -18,16 +31,68 @@
       p.appendChild(label)
       label.appendChild(input)
       label.appendChild(span)
-      headersForm.appendChild(formGroup)         
+      // remove spinner
+      headersForm.appendChild(formGroup)     
+      
     });
+    let spinner = document.getElementById('gold-digger-spinner')
+    spinner.remove()
   
     let submitButton = document.createElement("button")
     submitButton.type = 'submit'
     submitButton.className = "btn waves-effect -waves-light"
     submitButton.textContent = "Extract"
     headersForm.append(submitButton)
+    headersForm.addEventListener("change", changeHandler)
     headersForm.addEventListener("submit", submitHandler)
   }
+
+  function changeHandler(e){
+    // get all the input children to iterate over later
+    const checkboxes = e.currentTarget.querySelectorAll('input')
+    const master = document.getElementById("master-option")
+    // detect if target is master
+    const targetChecked = e.target.checked
+    if(e.target.id === "master-option"){
+      // if it is, check if its status is checked or unchecked
+        if(targetChecked){
+          // if it's checked now, change everything to true
+          checkAll(checkboxes)
+        } else {
+          // if it's unchecked now, change all checked statuses to false
+          uncheckAll(checkboxes)
+        }
+      } else {
+        // if currentTarget is not master, then it's a member
+        // if it's checked
+        const listState = getCheckedState(checkboxes)
+        if(targetChecked){
+          // Check the state of the list
+          if(listState === "some"){
+            // If it's "some", change the master's status to indeterminate = true, checked = false
+            master.checked = false
+            master.indeterminate = true
+          } else {
+            // If it's "all" (the only other option), change the master to checked = true, indeterminate = false
+            master.checked = true
+            master.indeterminate = false 
+          }
+        } else {
+          //  if it's unchecked
+          // then check the state of the list
+          if(listState === "none"){
+            // if it's "none", masters checked = false, indeterminate = false
+            master.checked = false
+            master.indeterminate = false
+          } else {
+            // if it's "some", master  indeterminate = true, checked = false
+            master.indeterminate = true
+            master.checked = false
+          }
+
+        }
+      }
+    }
   
   function submitHandler(e){
     e.preventDefault()
@@ -43,8 +108,19 @@
   }
   
   function confirmSuccess(message){
+    let headersForm = document.getElementById("headers-form")
     let p = document.createElement('p')
     p.textContent = message
     headersForm.append(p)
   }
+
+  function getCheckedState(inputList){
+    let filteredByChecked = [...inputList].filter(input => input.checked)
+    return filteredByChecked.length === 0 ? 'none' :  
+      filteredByChecked.length === inputList.length ? 'all' : 'some'
+  }
+
+  const checkAll = checkboxes => checkboxes.forEach(cb => cb.checked = true)
+  const uncheckAll = checkboxes => checkboxes.forEach(cb => cb.checked = false)
+
 </script>

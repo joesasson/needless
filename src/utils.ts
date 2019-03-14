@@ -151,8 +151,13 @@ const lookupBarcode = upc => {
   // Types of property 'method' are incompatible.
   // Type 'string' is not assignable to type '"post" | "get" | "delete" | "patch" | "put"'.
   const response = UrlFetchApp.fetch(url, options).getContentText()
-  const sku = JSON.parse(response).data.pair.sku
-  return sku
+  const parsedResponse = JSON.parse(response)
+  if(parsedResponse.data){
+    const sku = parsedResponse.data.pair.sku
+    return sku
+  } else {
+    return  null
+  }
 }
 
 const getIndexByHeader = (camelizedName, headerMap) =>

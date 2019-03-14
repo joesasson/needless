@@ -124,19 +124,13 @@ class SalesOrderExtractor extends SheetData {
     } 
     return this.metadata 
   }
-
-  getSourceTabularData(){
-    // returns a new 2d array with all of the tabular data after transformation
-    // maybe I should allow an argument for headers so that I can get the data starting from a specific row
-    
-  }
   
   getSourceLineDetails(row, i){
     // get line details
     let style, size, upc, sku, qty,
         rate, store, po, shipTo1,
         shipTo2, address, city, state, zip,
-        title, lineDetails
+        title, productCode2, lineDetails
     switch (this.customer) {
       case "Nordstrom Rack":
         style = row[this.indices.vendorStyle];
@@ -201,7 +195,7 @@ class SalesOrderExtractor extends SheetData {
         qty = row[this.indices.qtyOrdered]
         upc = row[this.indices.productCode]
         rate = row[this.indices.unitPrice]
-        sku = lookupBarcode(upc)
+        sku = lookupBarcode(upc) || row[this.indices.productCode2]
         lineDetails = { style, size, upc, sku, qty,
           rate, store, po, shipTo1,
           shipTo2, address, city, state, zip }

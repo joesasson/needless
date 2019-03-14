@@ -53,7 +53,7 @@ function generateMultistorePicklist(wrapped, customer, stores){
         if(cachedSkus[upc]){
           sku = cachedSkus[upc]
         } else {
-          sku = lookupBarcode(upc)
+          sku = lookupBarcode(upc) || row[indices.productCode2]
           cachedSkus[upc] = sku
         }
       }
@@ -128,7 +128,8 @@ const collectQtys = (sheetData, customer) => {
     const {
       buyerStoreNo: storeI, // store number
       productCode: upcI, // upc
-      qtyOrdered // qty
+      qtyOrdered, // qty
+      productCode2
     } = sheetData.reduceHeaders();
     let cachedSkus = {}
     return sheetData.data.reduce((qtys, row, i) => {
@@ -139,7 +140,7 @@ const collectQtys = (sheetData, customer) => {
       if(cachedSkus[upc]){
         sku = cachedSkus[upc]
       } else {
-        sku = lookupBarcode(upc)
+        sku = lookupBarcode(upc) || row[productCode2]
         cachedSkus[upc] = sku
       }
       const qty = row[qtyOrdered];

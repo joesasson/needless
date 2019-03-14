@@ -14,7 +14,7 @@ function goldDigger(){
 
 
 function getHeaders(){
-  let { sheetData } = getSheetData()
+  let { sheetData } = getSheetData('active')
   let wrapped = new SheetData(sheetData)
   return wrapped.headers
 }
@@ -25,7 +25,7 @@ function include(filename) {
 }
 
 function processHeadersForm(formParams){
-  let { ss, sheetData } = getSheetData()
+  let { ss, sheetData } = getSheetData('active')
   let wrapped = new SheetData(sheetData)
   let indices = formParams.map(inputId => Number(inputId.split("-")[1]))
   let extracted = wrapped.extractColumnsByIndex(indices)
