@@ -159,6 +159,64 @@ class SheetData {
   }
 }
 
-export { SheetData }
+
+
+class Extractor {
+  data: any[][]
+  content: any[][]
+  headers: any[]
+  headerMap: {}
+  dataWidth: Number
+  dataHeight: Number
+  customer: String
+  indices: any
+  headerRow: any
+  metadata: any[][]
+  tabularData: any[][]
+
+  constructor(data, headerRow){
+    this.data = data
+    this.metadata = this.data.slice(0, headerRow)
+    this.tabularData = this.data.slice(headerRow)
+    this.headers = this.data[headerRow]
+    this.content = this.data.slice(headerRow + 1)
+    this.dataWidth = this.content[0].length
+    this.dataHeight = this.content.length
+    // this.headerMap = this.reduceHeaders()
+  }
+
+
+  extractColumnsByIndex(indices: Number[]){
+    return this.tabularData.map(row => {
+      return row.filter((cell, i) => indices.indexOf(i) > -1)
+    })
+  }
+
+  reduceHeaders(){
+    return this.indices = this.headers.reduce((columns, header, i) => {
+      let camelizedHeader = this.camelize(header)
+      columns[camelizedHeader] = i
+      return columns
+    }, {})
+  }
+
+  camelize(s: string) {
+    s = s.replace(/[^\w\s]/gi, " ");
+    return s
+      .split(" ")
+      .map((word, i) => {
+        word = word.toLowerCase();
+        if (i === 0) {
+          return word;
+        }
+        return word.charAt(0).toUpperCase() + word.slice(1);
+      })
+      .join("");
+  };
+
+}
+
+
+export { SheetData, Extractor }
 
 

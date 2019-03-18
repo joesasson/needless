@@ -11,9 +11,20 @@
   </head>
   <body>
     <h5 style="padding: 10px">Select the columns that you want to extract</h5>
-    <form id="headers-form" style="padding: 10px" action="#">
-      <img id="gold-digger-spinner" src="https://i.redd.it/o6m7b0l6h6pz.gif" style="margin-left: 40px; width: 100px; "/>
-    </form>
+    <div class="row">
+        <form id="headers-form" style="padding: 10px" action="#">
+          <div class="row">
+            <div class="input-field">
+              <input id="header-row-input" type="number" class="validate" placeholder="Leave blank for 1"/>
+              <label for="header-row-input">Header Row</label> 
+            </div>
+            <button id="set-header" class="btn">Set Header</button>
+            <div class="form-group" id="header-checkboxes">
+
+            </div>
+          </div>
+        </form>
+      </div>
     <?!= include('src/other/clientJs'); ?>
   </body>
 </html>

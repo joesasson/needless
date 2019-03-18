@@ -1,50 +1,78 @@
 <script>
-  google.script.run.withSuccessHandler(outputHeadersForm).getHeaders()
-  
-  function outputHeadersForm(headers) {
-    let headersForm = document.getElementById("headers-form")
-    let formGroup = document.createElement("div")
+    let headerRowButton = document.getElementById("set-header")
+    headerRowButton.addEventListener("click", headerRowChange)
+
 
     // create and append the select all/none checkbox
-    let selectAllP = document.createElement('p')
-    let selectAllLabel = document.createElement("label")
-    let selectAllInput = document.createElement("input")
-    let selectAllSpan = document.createElement("span")
-    selectAllInput.id = "master-option"
-    selectAllInput.type = "checkbox"
-    selectAllLabel.htmlFor = selectAllInput.id
-    selectAllSpan.textContent = 'Select All/None'
-    selectAllLabel.appendChild(selectAllInput)
-    formGroup.appendChild(selectAllP).appendChild(selectAllLabel).appendChild(selectAllSpan)
+    // let headerInput = appendFormInput(headersForm, { labelName: "Header Row", type: "number", id: "header-row-input" })
+    // headerInput.placeholder = "Leave blank for 1"
+    
 
+  function headerRowChange(e){
+    e.preventDefault()
+    let headersForm = document.getElementById("headers-form")
+    let img = document.createElement("img")
+    img.src = "https://i.redd.it/o6m7b0l6h6pz.gif"
+    img.id = 'gold-digger-spinner'
+    img.style = "margin-left: 40px; width: 100px; "
+    headersForm.appendChild(img)
+    let headerRow = document.getElementById("header-row-input").value
+    headerRow = headerRow === '' ? 0 : Number(headerRow) - 1
+    google.script.run.withSuccessHandler(renderCheckboxes).getHeaders(headerRow)
+  }
+
+  function renderCheckboxes(headers){   
+
+    let headersForm = document.getElementById("headers-form")
+    let headersGroup = document.getElementById("header-checkboxes")
+    let extractButton = document.getElementById("extract-button")
+    if(extractButton){
+      extractButton.remove()
+    }
+    while (headersGroup.firstChild) headersGroup.removeChild(headersGroup.firstChild);
+
+    appendFormInput(headersGroup, { labelName: 'Select All/None', type: "checkbox", id: "master-option" })
     headers.forEach((header, i) => {
-      let p = document.createElement('p')
-      let label = document.createElement('label')
-      let input = document.createElement("input")
-      let span = document.createElement('span')
-      input.id = `header-${i}`
-      input.type = 'checkbox'
-      span.textContent = header
-      label.htmlFor = input.id
-  
-      formGroup.append(p)
-      p.appendChild(label)
-      label.appendChild(input)
-      label.appendChild(span)
-      // remove spinner
-      headersForm.appendChild(formGroup)     
-      
+      let id = `header-${i}`
+      appendFormInput(headersGroup, { labelName: header, type: "checkbox", id })     
     });
     let spinner = document.getElementById('gold-digger-spinner')
     spinner.remove()
   
     let submitButton = document.createElement("button")
     submitButton.type = 'submit'
-    submitButton.className = "btn waves-effect -waves-light"
+    submitButton.className = "btn waves-effect waves-light"
+    submitButton.id = "extract-button"
     submitButton.textContent = "Extract"
     headersForm.append(submitButton)
     headersForm.addEventListener("change", changeHandler)
     headersForm.addEventListener("submit", submitHandler)
+  }
+
+  function appendFormInput(form, options){
+    const { labelName, type, id, placeholder } = options
+    let p = document.createElement('p')
+    let div = document.createElement('div')
+    let label = document.createElement('label')
+    let input = document.createElement("input")
+    let span = document.createElement('span')
+    div.className = "input-field"
+    label.htmlFor = input.id = id 
+    input.type = type
+
+    if(type === "checkbox"){
+      span.textContent = labelName 
+      form.appendChild(p).appendChild(label).appendChild(input)
+      label.appendChild(span)
+    } else if(type === "number" || type === "text"){
+      label.textContent = labelName
+      label.className = "active"
+      input.className = "validate"
+      form.appendChild(div).appendChild(input)
+      div.appendChild(label)
+    }
+
+    return input
   }
 
   function changeHandler(e){
@@ -96,28 +124,34 @@
   
   function submitHandler(e){
     e.preventDefault()
-    // add checked elements to an array
-    // get all input children
-    let inputs = e.currentTarget.querySelectorAll('input')
+    // get all children that have an id that starts with 'header'
+    const inputs = e.currentTarget.querySelectorAll('[id*="header"]')
     // loop through input elements
-    let inputsArray = Array.from(inputs)
-    let checked = inputsArray.filter(input => input.checked)
-    let ids = checked.map(input => input.id)
+    const inputsArray = Array.from(inputs)
+    const checked = inputsArray.filter(input => input.checked)
+    let headerRow = document.getElementById("header-row-input").value
+    headerRow = headerRow === '' ? 0 : Number(headerRow) - 1
+    let payload = {
+      headerIndices: checked.map(input => input.id),
+      headerRow
+    }
     // filter by checked
-    google.script.run.withSuccessHandler(confirmSuccess).processHeadersForm(ids)
+    google.script.run.withSuccessHandler(confirmSuccess).processHeadersForm(payload)
   }
   
   function confirmSuccess(message){
+    document.querySelector(".success-message").remove()
     let headersForm = document.getElementById("headers-form")
     let p = document.createElement('p')
+    p.class = "success-message"
     p.textContent = message
     headersForm.append(p)
   }
 
   function getCheckedState(inputList){
-    let filteredByChecked = [...inputList].filter(input => input.checked)
+    let filteredByChecked = [...inputList].filter(input => input.checked).filter(input => input.id !== "master-option")
     return filteredByChecked.length === 0 ? 'none' :  
-      filteredByChecked.length === inputList.length ? 'all' : 'some'
+      filteredByChecked.length === inputList.length - 1 ? 'all' : 'some'
   }
 
   const checkAll = checkboxes => checkboxes.forEach(cb => cb.checked = true)
