@@ -33,7 +33,7 @@ class SheetData {
   data: any[][]
   content: any[][]
   headers: any[]
-  headerMap: {}
+  headerMap: any
   transmissionType: String
   dataWidth: Number
   dataHeight: Number

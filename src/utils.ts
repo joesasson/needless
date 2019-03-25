@@ -185,7 +185,24 @@ const padZip = (zip: string) => {
   return zip
 }
 
+const padAllRows = (data: any[][]) => {
+  // map the length of all rows
+  const lengths = data.map(row => row.length)
+  // get the max
+  const max = Math.max(...lengths)
+  // pad all rows that are less than the max with blanks
+  return data.map((row: any[]) => {
+    if(row.length === max){
+      return row
+    }
+    let missing = max - row.length
+    let filler = addSpaces(missing)
+    let paddedRow = row.concat(filler)
+    return paddedRow  
+  })
+}
+
 
 export { capitalize, camelize, getIndexByHeader, reduceHeaders, 
   getSheetData, createNewSheetWithData, cleanSize, getPaddedSku, splitSku,
-  lookupBarcode };
+  lookupBarcode, padAllRows };

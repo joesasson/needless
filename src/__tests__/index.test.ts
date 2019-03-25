@@ -5,7 +5,8 @@ import {
   camelize,
   cleanSize,
   getPaddedSku,
-  splitSku
+  splitSku,
+  padAllRows
 } from '../utils';
 
 describe('camelize', () => {
@@ -104,5 +105,21 @@ describe('splitSku', () => {
     let size = splitSku(sku)[1]
     expect(style).toBe('14598-b')
     expect(size).toBe('5')
+  })
+})
+
+describe('padAllRows', () => {
+  
+  test('fills rows with blanks to meet max', () => {
+    let data: any[][] = [
+      [1, 2, "3"],
+      [1]
+    ]
+    let result = padAllRows(data)
+    let expected = [
+      [1, 2, "3"],
+      [1, '', '']
+    ]
+    expect(result).toEqual(expected)
   })
 })

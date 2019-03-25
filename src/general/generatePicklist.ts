@@ -1,5 +1,5 @@
 import { SalesOrderExtractor } from './extractSalesOrder'
-import { getSheetData, lookupBarcode, getPaddedSku, createNewSheetWithData } from '../utils'
+import { getSheetData, lookupBarcode, getPaddedSku, createNewSheetWithData, padAllRows } from '../utils'
 
 function generatePicklist() {
   const { ss, sheetData } = getSheetData();
@@ -14,7 +14,12 @@ function generatePicklist() {
     newData = generateMultistorePicklist(wrapped, customer, stores)
   } else {
     newData = generateSimplePicklist(wrapped)
+    let total = wrapped.getTotalQty(newData)
+    showModal(total)
+    newData[6][1] = total
   }
+
+  
 
   let newSheet = createNewSheetWithData(ss, newData,  `${customer} - Picklist`);
   newSheet.getDataRange().applyRowBanding()
@@ -47,7 +52,7 @@ function generateMultistorePicklist(wrapped, customer, stores){
         const { vendorStyle, vendorSizeDescription } = wrapped.reduceHeaders();
         style = row[vendorStyle];
         size = row[vendorSizeDescription];
-        upc = row[indices.productId]
+        upc = row[indices.productId];
         sku = `${style}_${size}`; 
       } else if(customer === 'Von Maur'){
         const upcI = indices.productCode
@@ -71,7 +76,7 @@ function generateMultistorePicklist(wrapped, customer, stores){
   // sort by upc
   let [headers, ...content] = newData
   content.sort((a, b) => {
-    if(a[0] === 'sku') return 0
+    if(a[0] === 'sku') return 0;
     // get both skus, pad them and do a numerical compare
     return getPaddedSku(a[0]).localeCompare(getPaddedSku(b[0]), 'en', { numeric: true })
   })
@@ -95,9 +100,9 @@ function generateSimplePicklist(wrapped){
   // we have metadata in the wrapper
   // we just need to get the line details
   // and add the title
-  
+  let metadata = wrapped.addMetaDetails()
 
-  return wrapped.data.map((row, i) => {
+  let tabularData =  wrapped.data.map((row, i) => {
     if(i === 0){
       return ["Sku", "Title", "Qty", "In QB"]
     }
@@ -110,7 +115,8 @@ function generateSimplePicklist(wrapped){
     } = lineDetails
 
     title = title || `${styleName} - ${color}`
-    const inQbFormula = `=countif(IMPORTRANGE("${QB_REF_SHEET}", "items!D:D"), A${i + 1}) >0`
+    let currentRow = i - wrapped.headerRow + metadata.length
+    const inQbFormula = `=countif(IMPORTRANGE("${QB_REF_SHEET}", "items!D:D"), A${currentRow}) >0`
   
     return [
       sku,
@@ -119,6 +125,7 @@ function generateSimplePicklist(wrapped){
       inQbFormula
     ]
   }).filter(x => x)
+  return padAllRows(metadata.concat(tabularData))
 }
 
 const collectQtys = (sheetData, customer) => {
@@ -167,22 +174,40 @@ const collectQtys = (sheetData, customer) => {
 };
 
 export class PicklistGenerator extends SalesOrderExtractor{
+
   constructor(sheetData){
     super(sheetData)
   }
 
+  getTotalQty(newData){
+    // sum total qty here
+    return newData.reduce((total, row, i) => {
+      // skip meta
+      let headerRow = 11
+      let qtyColumn = 2
+      if(i < headerRow) return total
+      // add qty to total
+      return total + Number(row[qtyColumn])
+    }, 0)
+  }
+
   addMetaDetails(){
+    const {
+      masterPo, ship_date, cancel_date, carrier, date
+    } = this.metadata
+    const approveSheet = `=IMPORTRANGE("${QB_REF_SHEET}", "items!A1")`
+
     return [
-      ["PREPACKED",,,]
-      ["PO", , ],
-      ["Customer",,,],
-      ["Ship Date",,,],
-      ["Cancel Date",,,],
-      ["MJNY PO",,,],
-      ["Total Pairs",,,],
-      ["Total Boxes",,,],
-      ["Total Pallets",,,],
-      ["Total Weight",,,]
+      ["PREPACKED", "", approveSheet],
+      ["PO", masterPo],
+      ["Customer",this.customer],
+      ["Ship Date", ship_date],
+      ["Cancel Date",cancel_date],
+      ["MJNY PO"],
+      ["Total Pairs"],
+      ["Total Boxes"],
+      ["Total Pallets"],
+      ["Total Weight","=B7 * 1.2"]
     ]
   }
 
