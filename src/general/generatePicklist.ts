@@ -35,21 +35,23 @@ function generateMultistorePicklist(wrapped, customer, stores){
     .map((row, i) => {
       if (i === 0) {
         // header row
-        return ["sku", ...stores];
+        return ["Sku", "Upc", ...stores];
       }
       let style = ''
       let size = ''
       let sku = ''
+      let upc = ''
       let indices = wrapped.reduceHeaders()
       // variables for nordstrom rack
       if(customer === 'Nordstrom Rack'){
         const { vendorStyle, vendorSizeDescription } = wrapped.reduceHeaders();
         style = row[vendorStyle];
         size = row[vendorSizeDescription];
+        upc = row[indices.productId]
         sku = `${style}_${size}`; 
       } else if(customer === 'Von Maur'){
         const upcI = indices.productCode
-        const upc = row[upcI]
+        upc = row[upcI]
         if(cachedSkus[upc]){
           sku = cachedSkus[upc]
         } else {
@@ -63,10 +65,10 @@ function generateMultistorePicklist(wrapped, customer, stores){
       }
       doneSkus.push(sku);
       const storeQtys = stores.map(store => qtys[`${sku}@${store}`] || "");
-      return [sku, ...storeQtys];
+      return [sku, upc, ...storeQtys];
     })
     .filter(row => row)
-  // sort by padded sku
+  // sort by upc
   let [headers, ...content] = newData
   content.sort((a, b) => {
     if(a[0] === 'sku') return 0
@@ -76,8 +78,16 @@ function generateMultistorePicklist(wrapped, customer, stores){
   newData = [headers, ...content]
   // rows = skus, columns = store #, values = qtys
   // sku        store1 store2 total
-  // 14598-b_5  5       3     8
-  // 14598-b_9  3       1     4
+  // 14598-b_5  5       2     7
+  // 14598-b_9  3       6     9
+  // total      8       8
+  // const formulaArray = Array.apply(null, Array(stores.length)).map((x, i) => {
+  //   const column = i + 3
+  //   return `=SUM(C2:C${newData.length})`
+  // })
+    
+  // const totalRow = ["Store Totals", "", ...formulaArray]
+  // newData.push(totalRow)
   return newData
 }
 
@@ -85,9 +95,11 @@ function generateSimplePicklist(wrapped){
   // we have metadata in the wrapper
   // we just need to get the line details
   // and add the title
+  
+
   return wrapped.data.map((row, i) => {
     if(i === 0){
-      return ["Sku", "Title", "Qty"]
+      return ["Sku", "Title", "Qty", "In QB"]
     }
     let lineDetails = wrapped.getSourceLineDetails(row, i)
     if(!lineDetails){
@@ -98,11 +110,13 @@ function generateSimplePicklist(wrapped){
     } = lineDetails
 
     title = title || `${styleName} - ${color}`
+    const inQbFormula = `=countif(IMPORTRANGE("${QB_REF_SHEET}", "items!D:D"), A${i + 1}) >0`
   
     return [
       sku,
       title,
       qty,
+      inQbFormula
     ]
   }).filter(x => x)
 }
@@ -152,31 +166,24 @@ const collectQtys = (sheetData, customer) => {
   }
 };
 
-const getUniqueStores = (sheetData, customer) =>
-  sheetData.data
-    .reduce((stores, row, i) => {
-      if (i === 0) return stores;
-      let store = ''
-      const indices = sheetData.reduceHeaders();
-
-      if(customer === 'Von Maur'){
-        store = indices.buyerStoreNo 
-      } else if(customer === 'Nordstrom Rack') {
-        store = indices.store
-      } else {
-        store = '0'
-      }
-
-      if (stores.indexOf(row[store]) > -1) {
-        return stores;
-      }
-      return [...stores, row[store]];
-    }, [])
-    .sort((a, b) => a - b);
-
 export class PicklistGenerator extends SalesOrderExtractor{
   constructor(sheetData){
     super(sheetData)
+  }
+
+  addMetaDetails(){
+    return [
+      ["PREPACKED",,,]
+      ["PO", , ],
+      ["Customer",,,],
+      ["Ship Date",,,],
+      ["Cancel Date",,,],
+      ["MJNY PO",,,],
+      ["Total Pairs",,,],
+      ["Total Boxes",,,],
+      ["Total Pallets",,,],
+      ["Total Weight",,,]
+    ]
   }
 
   getUniqueStores(){

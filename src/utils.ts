@@ -185,6 +185,7 @@ const padZip = (zip: string) => {
   return zip
 }
 
+
 export { capitalize, camelize, getIndexByHeader, reduceHeaders, 
   getSheetData, createNewSheetWithData, cleanSize, getPaddedSku, splitSku,
   lookupBarcode };
