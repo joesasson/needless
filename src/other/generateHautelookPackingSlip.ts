@@ -1,4 +1,10 @@
-import { getSheetData, createNewSheetWithData } from "../utils";
+import { getSheetData, createNewSheetWithData, reduceHeaders, showModal, detectHeaderRow, getStyleFromSku } from "../utils";
+import { SheetData } from "../Needless";
+
+function prepareHautelookShipment(){
+  generateHautelookPackingSlip()
+  generateBoxLabelTemplate()
+}
 
 function generateHautelookPackingSlip(){
   // get sheet info
@@ -26,20 +32,48 @@ function generateHautelookPackingSlip(){
       row[ttlUnits],
       row[ttlUnits],
       '',
-      row[ttlUnits] ? `=E${i + 1}-F${i + 1}` : ""
+      row[ttlUnits] ? `=D${i + 1}-E${i + 1}` : ""
     ]
 
   })
   // extract columns
   
-  // I'm going to have to deal with length issues
   createNewSheetWithData(ss, newData, "Packing Slip")
 }
 
-const getColumnIndicesFromSelection = () => {
+function generateBoxLabelTemplate(){
+  const { ss, sheet, sheetData } = getSheetData('Nordstromrack.com/Hautelook - Picklist')
+  const wrapped = new SheetData(sheetData)
 
-}
+  // I can get meta data manually on top
+  // Then map through the whole thing and only return the rows that have something in box
+  const headers = ['style', "style_name", "qty", "po", "ship_to", "ship_from"]
+  // meta
+  const ship_from = "MARC JOSEPH NEW YORK 140 58TH STREET. BROOKLYN, NY 11220"
+  const ship_to = wrapped.data[6][1]
+  const po = wrapped.data[1][1]
+  // details
+  const headerRow = detectHeaderRow(sheetData)
+  const indices = reduceHeaders(sheetData, headerRow)
 
-const getHeaderRowFromSelection = () => {
-
+  const newData = sheetData.map((row, i) => {
+    if(i < headerRow || row[indices.boxes] === ''){
+      return
+    }
+    if(i === headerRow){
+      return headers
+    }
+    const style = getStyleFromSku(row[indices.sku])
+    const style_name = row[indices.title]
+    const box_qty = row[indices.boxes]
+    return [
+      style,
+      style_name,
+      box_qty,
+      po,
+      ship_to,
+      ship_from
+    ]
+  }).filter(x => x)
+  createNewSheetWithData(ss, newData, "Box Labels Template")
 }

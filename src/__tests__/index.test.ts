@@ -6,7 +6,8 @@ import {
   cleanSize,
   getPaddedSku,
   splitSku,
-  padAllRows
+  padAllRows,
+  detectHeaderRow
 } from '../utils';
 
 describe('camelize', () => {
@@ -111,15 +112,28 @@ describe('splitSku', () => {
 describe('padAllRows', () => {
   
   test('fills rows with blanks to meet max', () => {
-    let data: any[][] = [
+    const data: any[][] = [
       [1, 2, "3"],
       [1]
     ]
-    let result = padAllRows(data)
-    let expected = [
+    const result = padAllRows(data)
+    const expected = [
       [1, 2, "3"],
       [1, '', '']
     ]
     expect(result).toEqual(expected)
+  })
+})
+
+describe("detectHeaderRow", () => {
+  it("finds the first row without blanks", () => {
+    const data = [
+      ['a', ''],
+      ['a', 'b'],
+      ['a', 'b']
+    ]
+    const expected = 1
+    const result = detectHeaderRow(data)
+    expect(result).toBe(expected)
   })
 })

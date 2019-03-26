@@ -22,7 +22,7 @@ function onOpen(e){
       .addItem("Extract Shopify Invoice and Credit Details", "extractShopifyInvoice")
     )
     .addSubMenu(SpreadsheetApp.getUi().createMenu("Other")
-      .addItem("Generate Hautelook Packing Slip", "generateHautelookPackingSlip")
+      .addItem("Prepare Hautelook Shipment (Packing Slip + Labels)", "prepareHautelookShipment")
       .addItem("Open Gold Digger", "goldDigger")
       .addItem("Log Sheet", 'logSheet')
     )
@@ -41,7 +41,7 @@ class SheetData {
   indices: any
   headerRow: any
 
-  constructor(data){
+  constructor(data, headerRow=0){
     // remove first row if there is a 'sep=' in the first cell
     if(data[0][0] === 'sep='){
       this.data = data.slice(1)
@@ -49,6 +49,7 @@ class SheetData {
     } else {
       this.data = data
     }
+    this.headerRow = headerRow
     this.content = this.data.slice(1)
     this.dataWidth = this.data[0].length
     this.dataHeight = this.data.length
@@ -124,7 +125,7 @@ class SheetData {
         this.headerRow = 26
         break
       default:
-        this.headerRow = 0
+        break
     }
     this.headers = this.data[this.headerRow]
   }

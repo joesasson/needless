@@ -15,8 +15,7 @@ function generatePicklist() {
   } else {
     newData = generateSimplePicklist(wrapped)
     let total = wrapped.getTotalQty(newData)
-    showModal(total)
-    newData[6][1] = total
+    newData[7][1] = total
   }
 
   
@@ -104,7 +103,7 @@ function generateSimplePicklist(wrapped){
 
   let tabularData =  wrapped.data.map((row, i) => {
     if(i === 0){
-      return ["Sku", "Title", "Qty", "In QB"]
+      return ["Sku", "Title", "Qty", "In QB", "Boxes"]
     }
     let lineDetails = wrapped.getSourceLineDetails(row, i)
     if(!lineDetails){
@@ -193,7 +192,7 @@ export class PicklistGenerator extends SalesOrderExtractor{
 
   addMetaDetails(){
     const {
-      masterPo, ship_date, cancel_date, carrier, date
+      masterPo, ship_date, cancel_date
     } = this.metadata
     const approveSheet = `=IMPORTRANGE("${QB_REF_SHEET}", "items!A1")`
 
@@ -204,6 +203,7 @@ export class PicklistGenerator extends SalesOrderExtractor{
       ["Ship Date", ship_date],
       ["Cancel Date",cancel_date],
       ["MJNY PO"],
+      ["Ship To"]
       ["Total Pairs"],
       ["Total Boxes"],
       ["Total Pallets"],

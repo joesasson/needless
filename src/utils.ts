@@ -27,7 +27,7 @@ const reduceHeaders = (sheetData, row = 0) => {
   }, {});
 };
 
-const camelize = string => {
+export function camelize (string){
   string = string.replace(/[^\w\s]/gi, " ");
   return string
     .split(" ")
@@ -62,6 +62,20 @@ const extractColumnsByHeader = (
   });
   return newData;
 };
+
+export function detectHeaderRow(data) {
+  // first row that has no blanks
+  let headerRow
+  for(let i = 0; i < data.length; i++){
+    // if row has a blank, continue the loop
+    // else return i
+    if(data[i].indexOf('') === -1){  
+      headerRow = i; 
+      break
+    }
+  } 
+  return headerRow
+}
 
 const createNewSheetWithData = (
   ss: GoogleAppsScript.Spreadsheet.Spreadsheet,
@@ -108,12 +122,12 @@ function getSheetData(name='') {
 
 }
 
-function logSheet(){
+export function logSheet(){
   let { sheetData } = getSheetData()
   showModal(sheetData, "Log")
 }
 
-function showModal(message, title){
+export function showModal(message, title){
   let html = HtmlService.createHtmlOutput(`${message}`)
   SpreadsheetApp.getUi().showModalDialog(html, title)
 }
@@ -203,6 +217,6 @@ const padAllRows = (data: any[][]) => {
 }
 
 
-export { capitalize, camelize, getIndexByHeader, reduceHeaders, 
+export { capitalize, getIndexByHeader, reduceHeaders, 
   getSheetData, createNewSheetWithData, cleanSize, getPaddedSku, splitSku,
-  lookupBarcode, padAllRows };
+  lookupBarcode, padAllRows, getStyleFromSku }
