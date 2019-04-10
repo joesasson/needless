@@ -1,5 +1,5 @@
 function commitmentToSkuSheet(){
-  let ss = SpreadsheetApp.getActiveSpreadsheet() || SpreadsheetApp.openByUrl('https://docs.google.com/spreadsheets/d/1NbnknGTdgOJ-8MjmtKwIE8A-ZsP75nIMgSBwAcOzZn8/edit');
+  let ss = SpreadsheetApp.getActiveSpreadsheet() || SpreadsheetApp.openByUrl(TEST_URL);
   let sheet = ss.getSheetByName("Stage Details");
   let sheetData = sheet.getDataRange().getValues();
 
@@ -20,7 +20,7 @@ function commitmentToSkuSheet(){
   // transformations
   const makeSku = (row: []) => `${row[style]}_${row[size]}`.replace(" M US", "")
   const extractStyleName = (row: [], i) => {
-    let styleName = row[modelName].split(" Brazil ")[1]
+    let styleName = modelName ? row[modelName].split(" Brazil ")[1] : ''
     let formulaString = `=REPLACE("${styleName}", FIND(P${i + 1}, "${styleName}"), LEN(P${i + 1}), "")`
     return formulaString 
   }
