@@ -93,15 +93,23 @@ class SalesOrderExtractor extends SheetData {
   }
 
   getSourceMetadata(){
-    let masterPo, ship_date, cancel_date, carrier, date
+    let masterPo, ship_date, cancel_date, carrier
+    let date = "=TODAY()"
+    let metadata = { masterPo, ship_date, cancel_date, carrier, date }
     switch (this.customer) {
+      case 'BLOOMINGDALES':
+        metadata.masterPo = this.data[1][this.indices.po]
+        metadata.ship_date = this.data[1][this.indices.requestShipDate]
+        metadata.cancel_date = this.data[1][this.indices.cancelAfter]
+        metadata.carrier = 'UPS'
+        this.metadata = metadata
+        break
       case "Nordstrom Rack":
-        masterPo = this.data[1][this.indices.po];
-        ship_date = this.data[1][this.indices.shipNotBefore];
-        cancel_date = this.data[1][this.indices.cancelAfter];
-        carrier = "Gilbert East";
-        date = ship_date;
-        this.metadata = { masterPo, ship_date, cancel_date, carrier, date }
+        metadata.masterPo = this.data[1][this.indices.po];
+        metadata.ship_date = this.data[1][this.indices.shipNotBefore];
+        metadata.cancel_date = this.data[1][this.indices.cancelAfter];
+        metadata.carrier = "Gilbert East";
+        this.metadata = metadata
         break;
       case "Nordstromrack.com/Hautelook":
         masterPo = this.data[16][2];
@@ -124,7 +132,7 @@ class SalesOrderExtractor extends SheetData {
     } 
     return this.metadata 
   }
-  
+
   getSourceLineDetails(row, i){
     // get line details
     let style, size, upc, sku, qty,
@@ -132,6 +140,21 @@ class SalesOrderExtractor extends SheetData {
         shipTo2, address, city, state, zip,
         title, productCode2, lineDetails
     switch (this.customer) {
+      case "BLOOMINGDALES":
+        po = row[this.indices.po]
+        upc = row[this.indices.productCode]
+        sku = lookupBarcode(upc)
+        qty = row[this.indices.qty]
+        rate = row[this.indices.unitPrice]
+        shipTo1 = row[this.indices.partyName]
+        shipTo2 = row[this.indices.partyAddress1]
+        city = row[this.indices.partyCity]
+        state = row[this.indices.partyState]
+        zip = row[this.indices.partyZipcode]
+        lineDetails = { style, size, upc, sku, qty,
+          rate, store, po, shipTo1,
+          shipTo2, address, city, state, zip, title } 
+        break
       case "Nordstrom Rack":
         style = row[this.indices.vendorStyle];
         size = row[this.indices.vendorSizeDescription];

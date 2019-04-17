@@ -14,6 +14,7 @@ function onOpen(e){
     .addSubMenu(SpreadsheetApp.getUi().createMenu('General Tasks')
       .addItem("Remove Empty Columns", "removeEmptyColumns")
       .addItem("Extract Sales Order/Invoice Details", "extractSalesOrder")
+      .addItem("Generate UPS Batch File", 'generateUpsBatch')
       .addItem("Generate Packing Slip", "generatePackingSlip")
       .addItem("Generate Picklist", "generatePicklist")
       .addItem("Extract Selected Columns", "extractSelectedColumns")
@@ -91,6 +92,9 @@ class SheetData {
   detectCustomer(){
     const firstCell: String = this.data[0][0]
     switch(firstCell){
+      case "Trans Control #":
+        this.customer = "BLOOMINGDALES"
+        break
       case "Trans Control No":
         // Von Maur EDI
         this.customer = 'Von Maur'
@@ -116,16 +120,11 @@ class SheetData {
 
   setHeaders(){
     switch(this.customer){
-      case 'Von Maur':
-      case 'Nordstrom Rack':
-      case 'Amazon':
-        this.headerRow = 0
-        break
       case 'Nordstromrack.com/Hautelook':
         this.headerRow = 26
         break
       default:
-        break
+        this.headerRow = 0
     }
     this.headers = this.data[this.headerRow]
   }
@@ -217,6 +216,14 @@ class Extractor {
 
 }
 
+// class CustomerProfile{
+// 	constructor(name, details){
+// 		const { carrier } = details
+// 		this.name = name
+// 		this.carrier = carrier
+
+// 	}
+// }
 
 export { SheetData, Extractor }
 

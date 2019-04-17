@@ -5,8 +5,11 @@ function generatePicklist() {
   const { ss, sheetData } = getSheetData();
 
   const wrapped = new PicklistGenerator(sheetData);
-  // von maur uses buyerStoreNo as header for store
   const customer = wrapped.detectCustomer()
+	
+	// To test new stucture
+	let order = new Order(wrapped)
+
   // Source Transformations
   let stores = wrapped.getUniqueStores();
   let newData
@@ -203,11 +206,11 @@ export class PicklistGenerator extends SalesOrderExtractor{
       ["Ship Date", ship_date],
       ["Cancel Date",cancel_date],
       ["MJNY PO"],
-      ["Ship To"]
+      ["Ship To"],
       ["Total Pairs"],
       ["Total Boxes"],
       ["Total Pallets"],
-      ["Total Weight","=B7 * 1.2"]
+      ["Total Weight","=B8 * 1.2"]
     ]
   }
 
@@ -234,3 +237,147 @@ export class PicklistGenerator extends SalesOrderExtractor{
 
 }
     
+// Template Generator
+function generateTemplate(template, sourceData){
+	// template is an array of headers, and an array 
+	// representing the values that the array should hold
+	// the values will be keys that will pull from an object
+	
+}
+
+
+// Models for Order Extraction
+
+class SheetExtractor {
+	constructor(sheet){
+		// get the sheetData
+	}
+}
+
+class Order {
+	raw: any
+	metadata: OrderMetada
+	lines: any
+	lineItems: [LineItem] 
+	shippingData: ShippingData 
+	fulfillmentData: FulfillmentData
+	totals: OrderTotals
+	constructor(wrapper){
+		this.customer = wrapper.customer
+		this.raw = wrapper.data
+		this.indices = wrapper.headerMap
+		// const metadata = this.extractMetadata()
+		this.metadata = new OrderMetadata(wrapper.metadata)
+		// Get raw tabular data by using header and then
+		// pulling all lines after that in
+		this.lines = wrapper.content
+		this.lineItems = this.extractLineItems()
+	}
+
+	extractLineItems(){
+		const ind = this.indices
+	  return this.lines.map((row, i) => {
+			const upc = row[ind.productCode]
+			const itemDetails = {
+				po: row[ind.po],
+				upc,
+				sku: lookupBarcode(upc),
+				qty: row[ind.qty],
+				rate: row[ind.unitPrice],
+				shipTo1: row[ind.partyName],
+				shipTo2: row[ind.partyAddress1],
+				city: row[ind.partyCity],
+				state: row[ind.partyState],
+				zip: row[ind.partyZipcode]
+			}			
+			return new LineItem(itemDetails)	
+		})
+	}
+
+	extractMetadata(){
+		// TODO		
+	}
+}
+
+class OrderMetadata {
+	masterPo: String
+	shipDate: any
+	cancelDate: any
+	carrier: String
+	poDate: any
+	customer: Customer
+	constructor(metaDetails){
+		const { masterPo, shipDate, cancelDate, carrier,
+			poDate, customer } = metaDetails
+		
+		this.masterPo = masterPo
+		this.shipDate = shipDate
+		this.cancelDate = cancelDate
+		this.carrier = carrier
+		this.poDate = poDate
+		this.customer = new Customer(customer)
+	}
+}
+
+class LineItem {
+	sku: String
+	upc: Number
+	title: String
+	size: Number
+	stylePrefix: String
+	color: String
+	qty: Number
+	storeNumber: Number
+	unitPrice: Number
+	retailPrice: Number
+	styleName: String
+	po: String
+
+	constructor(lineDetails){
+		const {
+			sku, upc, po, qty, rate, shipTo1,
+			shipTo2, city, state, zip
+		} = lineDetails	
+		this.sku = sku
+		this.upc = upc
+		this.po = po
+		this.qty = qty
+		this.rate = rate,
+		this.shipTo1 = shipTo1
+		this.shipTo2 = shipTo2
+		this.city = city
+		this.state = state
+		this.zip = zip
+	}
+}
+
+class Customer {
+	customerName: String
+	billingName: String
+	billingAddress1: String
+	billingAddress2: String
+	billingCity: String
+	billingState: String
+	billingZip: String
+	billingPhone: String
+	shippingName: String
+	shippingAddress1: String
+	shippingAddress2: String
+	shippingCity: String
+	shippingState: String
+	shippingZip: String
+	shippingPhone: String
+	
+}
+
+class DropShipCustomer extends Customer {
+		
+}
+
+class FulfillmentData {
+
+}
+
+class OrderTotals {
+
+}

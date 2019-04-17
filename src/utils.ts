@@ -219,4 +219,4 @@ const padAllRows = (data: any[][]) => {
 
 export { capitalize, getIndexByHeader, reduceHeaders, 
   getSheetData, createNewSheetWithData, cleanSize, getPaddedSku, splitSku,
-  lookupBarcode, padAllRows, getStyleFromSku }
+  lookupBarcode, padAllRows, getStyleFromSku, addSpaces }
