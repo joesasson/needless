@@ -5,3 +5,4 @@ src/keys.ts
 private.clasp.json
 creds.json
 .clasprc.json
+*~
