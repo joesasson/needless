@@ -90,6 +90,7 @@ const createNewSheetWithData = (
   } else {
     newSheet = ss.insertSheet(sheetName);
   }
+  data = padAllRows(data)
   // get dimensions of data
   let dataHeight = data.length;
   let dataWidth = data[0].length;

@@ -1,12 +1,12 @@
 import { getSheetData, addSpaces, createNewSheetWithData, padAllRows } from '../utils'
 import { SalesOrderExtractor } from './extractSalesOrder'
 function generateUpsBatch(){
-  // get data from the order sheet
   // I want to map it, but condense multiple line orders
   // this is only for bloomingdales now
   // but I should eventually include other customers as well
   let totalWeight = 3
   const { ss, sheetData } = getSheetData()
+	createNewSheetWithData(ss, [[]], "Tracking")
   let extractor = new SalesOrderExtractor(sheetData)
   let newData = extractor.content.map((row, i, self) => {
     const firstCol = " "
@@ -66,4 +66,5 @@ function generateUpsBatch(){
   }).filter(x => x)
 
   createNewSheetWithData(ss, padAllRows(newData), "ups")
+  createNewSheetWithData(ss, [[]], "Tracking")
 }

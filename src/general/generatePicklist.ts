@@ -9,6 +9,20 @@ function generatePicklist() {
 	
 	// To test new stucture
 	let order = new Order(wrapped)
+	
+	// start off with only bloomingdales for new order adapter
+	if(order.customer === "BLOOMINGDALES"){
+		let selectedFields = ['po','sku','upc','qty']
+		let addedFields = ['In Stock']
+		let headers = [...selectedFields, ...addedFields]
+		let picklist = order.lineItems.map((row, i) => {
+			let selectedValues = selectedFields.map(field => row[field])
+			return selectedValues
+		})
+		picklist = [headers, ...picklist] 
+		createNewSheetWithData(ss, padAllRows(picklist), "New Picklist Test")
+		return
+	}
 
   // Source Transformations
   let stores = wrapped.getUniqueStores();

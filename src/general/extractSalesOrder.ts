@@ -38,7 +38,9 @@ const generateSalesOrder = sourceData => {
         "Ship To 2",
         "City",
         "State",
-        "Zip"
+        "Zip",
+        "Tracking",
+        "Invoice"
       ];
 
     // get line details
@@ -48,7 +50,7 @@ const generateSalesOrder = sourceData => {
       }
       let { style, size, upc, sku, qty, 
         rate, store, po, shipTo1, shipTo2,
-        address, city, state, zip
+        address, city, state, zip, tracking, invoice
       } = lineDetails
 
 
@@ -69,7 +71,9 @@ const generateSalesOrder = sourceData => {
         shipTo2 || '',
         city || '',
         state || '',
-        zip || ''
+        zip || '',
+        tracking || '',
+        invoice || ''
       ];
     })
     .filter(x => x);
@@ -135,10 +139,12 @@ class SalesOrderExtractor extends SheetData {
 
   getSourceLineDetails(row, i){
     // get line details
+    let currentRow = i + 1
+    let previousRow = i
     let style, size, upc, sku, qty,
         rate, store, po, shipTo1,
         shipTo2, address, city, state, zip,
-        title, productCode2, lineDetails
+        title, productCode2, lineDetails, tracking, invoice
     switch (this.customer) {
       case "BLOOMINGDALES":
         po = row[this.indices.po]
@@ -151,9 +157,11 @@ class SalesOrderExtractor extends SheetData {
         city = row[this.indices.partyCity]
         state = row[this.indices.partyState]
         zip = row[this.indices.partyZipcode]
+        tracking = `=INDEX(Tracking!E:E, MATCH(E${currentRow}, Tracking!AL:AL, 0))`
+        invoice = `=IF(E${currentRow}=E${previousRow}, Q${previousRow}, Q${previousRow}+1)`
         lineDetails = { style, size, upc, sku, qty,
           rate, store, po, shipTo1,
-          shipTo2, address, city, state, zip, title } 
+          shipTo2, address, city, state, zip, title, tracking, invoice } 
         break
       case "Nordstrom Rack":
         style = row[this.indices.vendorStyle];

@@ -226,5 +226,3 @@ class Extractor {
 // }
 
 export { SheetData, Extractor }
-
-
