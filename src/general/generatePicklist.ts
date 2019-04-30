@@ -20,7 +20,7 @@ function generatePicklist() {
 			return selectedValues
 		})
 		picklist = [headers, ...picklist] 
-		createNewSheetWithData(ss, padAllRows(picklist), "New Picklist Test")
+		createNewSheetWithData(ss, padAllRows(picklist),`${order.customer} - Picklist`)
 		return
 	}
 
@@ -34,6 +34,7 @@ function generatePicklist() {
     let total = wrapped.getTotalQty(newData)
     newData[7][1] = total
   }
+
 
   
 
@@ -308,8 +309,9 @@ class Order {
 		})
 	}
 
-	extractMetadata(){
-		// TODO		
+	addFulfillmentData(){
+		const { sheetData: fulfillmentSheetData } = getSheetData(this.customer + " - Picklist")
+		this.fulfillmentData = new FulfillmentData(this.lineItems, fulfillmentSheetData) 
 	}
 }
 
@@ -389,9 +391,17 @@ class DropShipCustomer extends Customer {
 }
 
 class FulfillmentData {
-
+	constructor(lineItems, fulfillmentInput){
+		const { inStock } = reduceHeaders(fulfillmentInput)
+		fulfillmentInput = fulfillmentInput.slice(1)
+		this.items = lineItems.map((item, i) => {
+			qtyFulfilled = fulfillmentInput[i][inStock]
+			return {...item, qtyFulfilled}
+		})
+	}	
 }
 
 class OrderTotals {
 
 }
+
