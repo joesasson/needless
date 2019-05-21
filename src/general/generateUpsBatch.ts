@@ -1,5 +1,6 @@
 import { getSheetData, addSpaces, createNewSheetWithData, padAllRows } from '../utils'
 import { SalesOrderExtractor } from './extractSalesOrder'
+import { Order } from '../models'
 function generateUpsBatch(){
   // I want to map it, but condense multiple line orders
   // this is only for bloomingdales now
@@ -7,7 +8,8 @@ function generateUpsBatch(){
   let totalQty = 0
   const { ss, sheetData } = getSheetData()
   let extractor = new SalesOrderExtractor(sheetData)
-	let order = new Order(extractor)
+  let order = new Order(extractor)
+  // Will read user input in the In Stock column and add to the order object
 	order.addFulfillmentData()
   let newData = extractor.content.map((row, i, self) => {
 		const ind = extractor.indices

@@ -109,7 +109,7 @@ const capitalize = string =>
     .join(" ");
 
 function getSheetData(name='') {
-  let testUrl = TEST_URL;
+  let testUrl = PropertiesService.getScriptProperties().getProperty("TEST_URL") || TEST_URL
   let ss =
   SpreadsheetApp.getActiveSpreadsheet() || SpreadsheetApp.openByUrl(testUrl);
   // sheet can be either first (default), by name, or active if argument is 'active'
@@ -146,13 +146,15 @@ export const mapHeaders = data => {
   return headerMap;
 };
 
-const lookupBarcode = upc => {
+const lookupBarcode = (upc, cachedSkus) => {
   const url = 'https://sku-barcode-lookup.herokuapp.com/graphql'
+  if (cachedSkus[upc]) {
+    return cachedSkus[upc];
+  } 
   const payload = {
     query:  
-    `{ pair(upc:"${upc}") { sku } }` 
+  `{ pair(upc:"${upc}") { sku } }` 
   }
-
   const options = {
     method: "post",
     contentType: 'application/json' ,
@@ -168,10 +170,9 @@ const lookupBarcode = upc => {
   const response = UrlFetchApp.fetch(url, options).getContentText()
   const parsedResponse = JSON.parse(response)
   if(parsedResponse.data){
-    const sku = parsedResponse.data.pair.sku
-    return sku
+    return parsedResponse.data.pair.sku
   } else {
-    return  null
+    return null
   }
 }
 

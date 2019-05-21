@@ -1,6 +1,7 @@
 import { camelize, reduceHeaders } from './utils'
 
 function onOpen(e){
+  // set constants on top level
   SpreadsheetApp.getUi().createMenu("Needless")
     .addSubMenu(SpreadsheetApp.getUi().createMenu("Amazon PO")
       .addItem('Commitment Plan to QB PO', 'commitmentToPo')
@@ -26,6 +27,7 @@ function onOpen(e){
       .addItem("Prepare Hautelook Shipment (Packing Slip + Labels)", "prepareHautelookShipment")
       .addItem("Open Gold Digger", "goldDigger")
       .addItem("Log Sheet", 'logSheet')
+			.addItem('Noodle', 'noodle')
     )
     .addToUi();
 }
@@ -91,6 +93,9 @@ class SheetData {
 
   detectCustomer(){
     const firstCell: String = this.data[0][0]
+		if(this.data[1][50] === "Bloomingdales Outlet"){
+			return this.customer = "Bloomingdales Outlet"
+		}
     switch(firstCell){
       case "Trans Control #":
         this.customer = "BLOOMINGDALES"

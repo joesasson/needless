@@ -99,8 +99,16 @@ class SalesOrderExtractor extends SheetData {
   getSourceMetadata(){
     let masterPo, ship_date, cancel_date, carrier
     let date = "=TODAY()"
+    let topDataRow = this.data[1]
     let metadata = { masterPo, ship_date, cancel_date, carrier, date }
     switch (this.customer) {
+      case 'Bloomingdales Outlet':
+        metadata.masterPo = topDataRow[this.indices.poNo]
+        metadata.ship_date = topDataRow[this.indices.doNotDeliverBeforeIndcDate]
+        metadata.cancel_date = topDataRow[this.indices.cancelAfter]
+        metadata.carrier = 'UPS'
+        this.metadata = metadata
+        break
       case 'BLOOMINGDALES':
         metadata.masterPo = this.data[1][this.indices.po]
         metadata.ship_date = this.data[1][this.indices.requestShipDate]
