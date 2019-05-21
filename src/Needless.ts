@@ -1,5 +1,4 @@
 import { camelize, reduceHeaders } from './utils'
-
 function onOpen(e){
   // set constants on top level
   SpreadsheetApp.getUi().createMenu("Needless")
@@ -37,7 +36,6 @@ class SheetData {
   content: any[][]
   headers: any[]
   headerMap: any
-  transmissionType: String
   dataWidth: Number
   dataHeight: Number
   customer: String
@@ -48,7 +46,6 @@ class SheetData {
     // remove first row if there is a 'sep=' in the first cell
     if(data[0][0] === 'sep='){
       this.data = data.slice(1)
-      this.transmissionType = "edi"
     } else {
       this.data = data
     }
@@ -76,6 +73,7 @@ class SheetData {
     }, {})
   }
 
+  // this should be in a lower level class - Amazon Order 
   getAllMonths(){
     // get ship date index
     let { shipStartDate } = reduceHeaders(this.data)
@@ -91,6 +89,7 @@ class SheetData {
     return months
   }
 
+  // this should be in the order class
   detectCustomer(){
     const firstCell: String = this.data[0][0]
 		if(this.data[1][50] === "Bloomingdales Outlet"){
@@ -123,6 +122,7 @@ class SheetData {
     return this.customer
   }
 
+  // This should be passed in to the constructor
   setHeaders(){
     switch(this.customer){
       case 'Nordstromrack.com/Hautelook':
@@ -134,11 +134,14 @@ class SheetData {
     this.headers = this.data[this.headerRow]
   }
 
+  // This is amazon specific, doesn't need to be here
   dateFilter(filterDate) {
     let { shipStartDate } = reduceHeaders(this.data)
     return this.data.filter(row => row[shipStartDate] === filterDate) 
   }
 
+
+  // This is amazon specific, doesn't need to be here
   monthFilter(filterMonth){
     let { shipStartDate } = reduceHeaders(this.data)
     return this.data.filter((row, i) => {
@@ -149,6 +152,7 @@ class SheetData {
     })
   }
 
+  // This is amazon specific, doesn't need to be here
   removeDuplicatesByUpc() {
     const listOfUpcs = []
     const { upcEanGtin: upcI } = reduceHeaders(this.data)
@@ -163,71 +167,3 @@ class SheetData {
     }, [])
   }
 }
-
-
-
-class Extractor {
-  data: any[][]
-  content: any[][]
-  headers: any[]
-  headerMap: {}
-  dataWidth: Number
-  dataHeight: Number
-  customer: String
-  indices: any
-  headerRow: any
-  metadata: any[][]
-  tabularData: any[][]
-
-  constructor(data, headerRow){
-    this.data = data
-    this.metadata = this.data.slice(0, headerRow)
-    this.tabularData = this.data.slice(headerRow)
-    this.headers = this.data[headerRow]
-    this.content = this.data.slice(headerRow + 1)
-    this.dataWidth = this.content[0].length
-    this.dataHeight = this.content.length
-    // this.headerMap = this.reduceHeaders()
-  }
-
-
-  extractColumnsByIndex(indices: Number[]){
-    return this.tabularData.map(row => {
-      return row.filter((cell, i) => indices.indexOf(i) > -1)
-    })
-  }
-
-  reduceHeaders(){
-    return this.indices = this.headers.reduce((columns, header, i) => {
-      let camelizedHeader = this.camelize(header)
-      columns[camelizedHeader] = i
-      return columns
-    }, {})
-  }
-
-  camelize(s: string) {
-    s = s.replace(/[^\w\s]/gi, " ");
-    return s
-      .split(" ")
-      .map((word, i) => {
-        word = word.toLowerCase();
-        if (i === 0) {
-          return word;
-        }
-        return word.charAt(0).toUpperCase() + word.slice(1);
-      })
-      .join("");
-  };
-
-}
-
-// class CustomerProfile{
-// 	constructor(name, details){
-// 		const { carrier } = details
-// 		this.name = name
-// 		this.carrier = carrier
-
-// 	}
-// }
-
-export { SheetData, Extractor }

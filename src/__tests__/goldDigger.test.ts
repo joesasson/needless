@@ -1,5 +1,5 @@
 import { shopifyData } from "./testHelpers";
-import { SheetData } from "../Needless";
+import { SheetData } from "../models";
 
 describe("goldDigger", () => {
   it("gets the column header names and indices", () => {

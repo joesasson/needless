@@ -1,5 +1,5 @@
 import { getSheetData, reduceHeaders, createNewSheetWithData, lookupBarcode } from '../utils'
-import { SheetData } from '../Needless'
+import { SheetData } from '../models'
 
 function extractSalesOrder() {
   let { ss, sheetData } = getSheetData(); 
@@ -87,6 +87,7 @@ class SalesOrderExtractor extends SheetData {
   globalRate: string
   color: string
   styleName: string
+  cachedSkus: {}
 
   constructor(sourceData){
     super(sourceData)
@@ -94,6 +95,7 @@ class SalesOrderExtractor extends SheetData {
     this.getSourceMetadata()
     this.globalStyle = ''
     this.globalRate = ''
+    this.cachedSkus = {}
   }
 
   getSourceMetadata(){
@@ -157,7 +159,7 @@ class SalesOrderExtractor extends SheetData {
       case "BLOOMINGDALES":
         po = row[this.indices.po]
         upc = row[this.indices.productCode]
-        sku = lookupBarcode(upc)
+        sku = lookupBarcode(upc, this.cachedSkus)
         qty = row[this.indices.qty]
         rate = row[this.indices.unitPrice]
         shipTo1 = row[this.indices.partyName]
@@ -234,7 +236,7 @@ class SalesOrderExtractor extends SheetData {
         qty = row[this.indices.qtyOrdered]
         upc = row[this.indices.productCode]
         rate = row[this.indices.unitPrice]
-        sku = lookupBarcode(upc) || row[this.indices.productCode2]
+        sku = lookupBarcode(upc, this.cachedSkus) || row[this.indices.productCode2]
         lineDetails = { style, size, upc, sku, qty,
           rate, store, po, shipTo1,
           shipTo2, address, city, state, zip }

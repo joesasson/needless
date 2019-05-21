@@ -256,9 +256,4 @@ function generateTemplate(template, sourceData) {
 
 // Models for Order Extraction
 
-class SheetExtractor {
-  constructor(sheet) {
-    // get the sheetData
-  }
-}
 
