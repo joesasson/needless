@@ -1,5 +1,5 @@
 import { getSheetData, reduceHeaders, createNewSheetWithData, lookupBarcode } from '../utils'
-import { SheetData } from '../models'
+import { SheetData } from '../Amodels'
 
 function extractSalesOrder() {
   let { ss, sheetData } = getSheetData(); 
@@ -155,7 +155,19 @@ class SalesOrderExtractor extends SheetData {
         rate, store, po, shipTo1,
         shipTo2, address, city, state, zip,
         title, productCode2, lineDetails, tracking, invoice
+    let ind = this.indices
     switch (this.customer) {
+      case "Bloomingdales Outlet":
+        po = this.metadata.masterPo
+        upc = row[ind.productCode]
+        sku = lookupBarcode(upc, this.cachedSkus)
+        qty = row[ind.qty]
+        rate = row[ind.unitPrice]
+        title = 'not available'
+        lineDetails = {
+          upc, sku, qty, rate, title, po
+        }
+        break;
       case "BLOOMINGDALES":
         po = row[this.indices.po]
         upc = row[this.indices.productCode]

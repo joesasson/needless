@@ -1,6 +1,6 @@
 import { getSheetData, addSpaces, createNewSheetWithData, padAllRows } from '../utils'
 import { SalesOrderExtractor } from './extractSalesOrder'
-import { Order } from '../models'
+import { Order } from '../Amodels'
 function generateUpsBatch(){
   // I want to map it, but condense multiple line orders
   // this is only for bloomingdales now

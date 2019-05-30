@@ -2,7 +2,7 @@
   "compilerOptions": {
     "checkJs": true,
     "allowJs": true,
-    "types": ["google-apps-script", "jest"],
+    "types": ["google-apps-script", "jest", "node"],
     "lib": ["es2017", "dom"]
   }
 }

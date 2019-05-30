@@ -1,6 +1,6 @@
 import { SalesOrderExtractor } from "./extractSalesOrder";
 import { getSheetData, lookupBarcode, getPaddedSku, createNewSheetWithData, padAllRows, reduceHeaders } from "../utils";
-import { Order } from '../models'
+import { Order } from '../Amodels'
 
 function generatePicklist() {
   const { ss, sheetData } = getSheetData();
