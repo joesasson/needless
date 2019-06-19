@@ -176,6 +176,16 @@ const lookupBarcode = (upc, cachedSkus) => {
   }
 }
 
+function detectCategory(order){
+  if(order.lineItems.some(lineItem => lineItem.size == 1)){
+    return 'kids'
+  }
+  if(order.lineItems.some(lineItem => lineItem.size == 13)){
+    return 'men'
+  }
+  return 'women'
+}
+
 const getIndexByHeader = (camelizedName, headerMap) =>
   headerMap.find(column => column.headerName === camelizedName).headerIndex;
 

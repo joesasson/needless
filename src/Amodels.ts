@@ -1,4 +1,4 @@
-import { reduceHeaders, lookupBarcode, getSheetData, camelize } from './utils'
+import { reduceHeaders, lookupBarcode, getSheetData, camelize, splitSku } from './utils'
 
 // Domain Model
 
@@ -19,6 +19,89 @@ import { reduceHeaders, lookupBarcode, getSheetData, camelize } from './utils'
 // Customer contains FieldMap that can be used as a reference to pull a column
 // Order consists of LineItems, Customer, Metadata
 // Generator picks and transforms fields and outputs them in a consistent format
+
+const customerProfiles = {
+	"Von Maur": {
+    name: "Von Maur",
+    id: "recGuzh7SlePGyO9B",
+    fieldMap: {
+      sku: null,
+      upc: 'productCode',
+      po: 'poNumber',
+      qty: 'qtyOrdered',
+      rate: 'unitPrice',
+      shipTo1: null,
+      shipTo2: null,
+      city: null,
+      state: null,
+      zip: null
+    }
+	},
+	"BLOOMINGDALES": {
+		name: "BLOOMINGDALES",
+    fieldMap: {
+      sku: null,
+      upc: 'productCode',
+      po: 'po',
+      qty: 'qty',
+      rate: 'unitPrice',
+      shipTo1: null,
+      shipTo2: null,
+      city: null,
+      state: null,
+      zip: null,
+    }
+  },
+  "Bloomingdales Outlet": {
+    name: "Bloomingdales Outlet",
+    id: "recpPF4dxZRbnqiNL",
+    fieldMap: {
+      sku: null,
+      upc: 'productCode',
+      po: 'poNumber',
+      qty: 'qtyOrdered',
+      rate: 'unitPrice',
+      shipTo1: null,
+      shipTo2: null,
+      city: null,
+      state: null,
+      zip: null
+    }
+  },
+  "Nordstrom Rack": {
+    name: "Nordstrom Rack",
+    id: "rec1gxrD5ycD8hHXW",
+    fieldMap: {
+      sku: null,
+      upc: 'productId',
+      po: 'po',
+      qty: 'orderedQty',
+      rate: 'unitPrice',
+      shipTo1: null,
+      shipTo2: null,
+      city: null,
+      state: null,
+      zip: null,
+      store: 'store'
+    }
+  },
+  "Nordstromrack.com/Hautelook": {
+    name: "Nordstromrack.com/Hautelook",
+    id: "recpfsYl1i7X7C5tO",
+    fieldMap: {
+      sku: null,
+      upc: 'productCode',
+      po: 'poNumber',
+      qty: 'qtyOrdered',
+      rate: 'unitPrice',
+      shipTo1: null,
+      shipTo2: null,
+      city: null,
+      state: null,
+      zip: null
+    }
+  },
+}
 
 class Order {
   raw: any;
@@ -46,16 +129,20 @@ class Order {
   }
 
   // This is specific to Bloomingdales, I need to abstract it
+
   extractLineItems() {
     const ind = this.indices;
+    const fieldMap = this.customer.fieldMap
     return this.lines.map((row, i) => {
-      const upc = row[ind.productCode];
+      const upc = row[ind[fieldMap['upc']]];
+      const masterPo = row[ind[fieldMap['po']]]
+      const store = row[ind[fieldMap['store']]]
       const itemDetails = {
-        po: row[ind.po],
+        po: store ? `${masterPo}-${store}` : masterPo, 
         upc,
         sku: lookupBarcode(upc, this.cachedSkus),
-        qty: row[ind.qty],
-        rate: row[ind.unitPrice],
+        qty: row[ind[fieldMap['qty']]],
+        rate: row[ind[fieldMap['rate']]],
         shipTo1: row[ind.partyName],
         shipTo2: row[ind.partyAddress1],
         city: row[ind.partyCity],
@@ -66,9 +153,14 @@ class Order {
     });
   }
 
+  summarize(link){
+    this.summary = new OrderSummary(this)
+    this.summary.poLink = link
+  }
+
   addFulfillmentData() {
     const { sheetData: fulfillmentSheetData } = getSheetData(
-      this.customer + " - Picklist"
+      this.customer.name + " - Picklist"
     );
     this.fulfillmentData = new FulfillmentData(
       this.lineItems,
@@ -124,6 +216,8 @@ class LineItem {
       zip
     } = lineDetails;
     this.sku = sku;
+    this.styleName = splitSku(sku)[0]
+    this.size = splitSku(sku)[1]
     this.upc = upc;
     this.po = po;
     this.qty = qty;
@@ -151,6 +245,7 @@ class Customer {
   shippingState: String;
   shippingZip: String;
   shippingPhone: String;
+  fieldMap: {}
 
   constructor(customerData){
 		Object.keys(customerData).forEach(key => {
@@ -172,7 +267,55 @@ class FulfillmentData {
   }
 }
 
-class OrderSummary {} // TODO
+class OrderSummary {
+  customerName: String
+  po: String
+  poLink: String
+  shipDate: String
+  cancelDate: String
+  totalPairs: Number
+  value: Number
+  category: String
+  styles: []
+  storeCount: Number
+  constructor(order){
+    this.customerName = order.customer.name
+    this.po = order.metadata.masterPo
+    this.shipDate = order.metadata.ship_date
+    this.cancelDate = order.metadata.cancel_date
+    let { totalPairs, value, styles } = this.calculateTotals(order)
+    this.styles = styles
+    this.totalPairs = totalPairs
+    this.value = value
+    this.category = this.detectCategory(order)
+  }
+
+  detectCategory(order){
+    if(order.lineItems.some(lineItem => lineItem.size == 1)){
+      return 'kids'
+    }
+    if(order.lineItems.some(lineItem => lineItem.size == 13)){
+      return 'men'
+    }
+    return 'women'
+  }
+
+  calculateTotals(order){
+    return order.lineItems.reduce((acc, lineItem) => {
+      const qty = lineItem.qty
+      const value = lineItem.rate * qty
+      const style = lineItem.styleName
+      acc.totalPairs += qty
+      acc.value += value
+      if(acc.styles.indexOf(style) === -1){ acc.styles.push(style) }
+      return acc
+    }, { 
+      totalPairs: 0,
+      value: 0,
+      styles: []
+    })
+  }
+} // TODO
 class ShippingData {} // TODO
 
 function createCustomer(customerName, customerProfiles){
@@ -183,26 +326,7 @@ function createCustomer(customerName, customerProfiles){
 // This will be the actual config data, I will work on moving it 
 // outside the code
 
-const customerProfiles = {
-	"Von Maur": {
-		name: "Von Maur",
-	
-	},
-	"BLOOMINGDALES": {
-		name: "BLOOMINGDALES",
-		
-  },
-  "Bloomingdales Outlet": {
-    name: "Bloomingdales Outlet",
 
-  },
-  "Nordstrom Rack": {
-    name: "Nordstrom Rack",
-  },
-  "Nordstromrack.com/Hautelook": {
-    name: "Nordstromrack.com/Hautelook",
-  },
-}
 
 
 

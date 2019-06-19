@@ -103,25 +103,26 @@ class SalesOrderExtractor extends SheetData {
     let date = "=TODAY()"
     let topDataRow = this.data[1]
     let metadata = { masterPo, ship_date, cancel_date, carrier, date }
+    const ind = this.indices
     switch (this.customer) {
       case 'Bloomingdales Outlet':
-        metadata.masterPo = topDataRow[this.indices.poNo]
-        metadata.ship_date = topDataRow[this.indices.doNotDeliverBeforeIndcDate]
-        metadata.cancel_date = topDataRow[this.indices.cancelAfter]
+        metadata.masterPo = topDataRow[ind.poNo]
+        metadata.ship_date = topDataRow[ind.doNotDeliverBeforeIndcDate]
+        metadata.cancel_date = topDataRow[ind.cancelAfter]
         metadata.carrier = 'UPS'
         this.metadata = metadata
         break
       case 'BLOOMINGDALES':
-        metadata.masterPo = this.data[1][this.indices.po]
-        metadata.ship_date = this.data[1][this.indices.requestShipDate]
-        metadata.cancel_date = this.data[1][this.indices.cancelAfter]
+        metadata.masterPo = this.data[1][ind.po]
+        metadata.ship_date = this.data[1][ind.requestShipDate]
+        metadata.cancel_date = this.data[1][ind.cancelAfter]
         metadata.carrier = 'UPS'
         this.metadata = metadata
         break
       case "Nordstrom Rack":
-        metadata.masterPo = this.data[1][this.indices.po];
-        metadata.ship_date = this.data[1][this.indices.shipNotBefore];
-        metadata.cancel_date = this.data[1][this.indices.cancelAfter];
+        metadata.masterPo = this.data[1][ind.po];
+        metadata.ship_date = this.data[1][ind.shipNotBefore];
+        metadata.cancel_date = this.data[1][ind.cancelAfter];
         metadata.carrier = "Gilbert East";
         this.metadata = metadata
         break;
@@ -134,9 +135,9 @@ class SalesOrderExtractor extends SheetData {
         this.metadata = { masterPo, ship_date, cancel_date, carrier, date }
         break;
       case 'Von Maur':
-        masterPo = this.data[1][this.indices.poNumber]
-        ship_date = this.data[1][this.indices.shipNotBefore]
-        cancel_date = this.data[1][this.indices.cancelAfter];
+        masterPo = this.data[1][ind.poNumber]
+        ship_date = this.data[1][ind.shipNotBefore]
+        cancel_date = this.data[1][ind.cancelAfter];
         carrier = 'TGIR'
         date = ship_date
         this.metadata = { masterPo, ship_date, cancel_date, carrier, date }
@@ -158,7 +159,8 @@ class SalesOrderExtractor extends SheetData {
     let ind = this.indices
     switch (this.customer) {
       case "Bloomingdales Outlet":
-        po = this.metadata.masterPo
+        store = row[ind.storeNo]
+        po = `${this.metadata.masterPo}-${store}`
         upc = row[ind.productCode]
         sku = lookupBarcode(upc, this.cachedSkus)
         qty = row[ind.qty]
@@ -169,16 +171,16 @@ class SalesOrderExtractor extends SheetData {
         }
         break;
       case "BLOOMINGDALES":
-        po = row[this.indices.po]
-        upc = row[this.indices.productCode]
+        po = row[ind.po]
+        upc = row[ind.productCode]
         sku = lookupBarcode(upc, this.cachedSkus)
-        qty = row[this.indices.qty]
-        rate = row[this.indices.unitPrice]
-        shipTo1 = row[this.indices.partyName]
-        shipTo2 = row[this.indices.partyAddress1]
-        city = row[this.indices.partyCity]
-        state = row[this.indices.partyState]
-        zip = row[this.indices.partyZipcode]
+        qty = row[ind.qty]
+        rate = row[ind.unitPrice]
+        shipTo1 = row[ind.partyName]
+        shipTo2 = row[ind.partyAddress1]
+        city = row[ind.partyCity]
+        state = row[ind.partyState]
+        zip = row[ind.partyZipcode]
         tracking = `=INDEX(Tracking!E:E, MATCH(E${currentRow}, Tracking!AL:AL, 0))`
         invoice = `=IF(E${currentRow}=E${previousRow}, Q${previousRow}, Q${previousRow}+1)`
         lineDetails = { style, size, upc, sku, qty,
@@ -186,21 +188,21 @@ class SalesOrderExtractor extends SheetData {
           shipTo2, address, city, state, zip, title, tracking, invoice } 
         break
       case "Nordstrom Rack":
-        style = row[this.indices.vendorStyle];
-        size = row[this.indices.vendorSizeDescription];
-        upc = row[this.indices.productId];
+        style = row[ind.vendorStyle];
+        size = row[ind.vendorSizeDescription];
+        upc = row[ind.productId];
         sku = `${style}_${size}`;
-        title = row[this.indices.productDescription]
-        qty = row[this.indices.orderedQty];
-        rate = row[this.indices.unitPrice];
-        store = row[this.indices.store];
+        title = row[ind.productDescription]
+        qty = row[ind.orderedQty];
+        rate = row[ind.unitPrice];
+        store = row[ind.store];
         po = `${this.metadata.masterPo}-${store}`;
-        shipTo1 = row[this.indices.shipToLocation];
-        shipTo2 = row[this.indices.shipToAddress];
+        shipTo1 = row[ind.shipToLocation];
+        shipTo2 = row[ind.shipToAddress];
         // shipping address
-        city = row[this.indices.shipToCity];
-        state = row[this.indices.shipToState];
-        zip = row[this.indices.shipToZipcode];
+        city = row[ind.shipToCity];
+        state = row[ind.shipToState];
+        zip = row[ind.shipToZipcode];
         lineDetails = { style, size, upc, sku, qty,
           rate, store, po, shipTo1,
           shipTo2, address, city, state, zip, title }
@@ -209,10 +211,10 @@ class SalesOrderExtractor extends SheetData {
         // skip rows before 27
         const headerRow = 26;
         if (i <= headerRow) return;
-        let styleVal = row[this.indices.vpn];
-        let color = row[this.indices.color]
-        let styleName = row[this.indices.vpnDescription]
-        size = row[this.indices.size1];
+        let styleVal = row[ind.vpn];
+        let color = row[ind.color]
+        let styleName = row[ind.vpnDescription]
+        size = row[ind.size1];
         // return if
         // style contains total
         // style and size are both empty
@@ -225,7 +227,7 @@ class SalesOrderExtractor extends SheetData {
         // set the style and rate until the next style is found
         if (styleVal !== "") {
           this.globalStyle = styleVal;
-          this.globalRate = row[this.indices.unitCost];
+          this.globalRate = row[ind.unitCost];
           this.styleName = styleName
           this.color = color
           return;
@@ -234,8 +236,8 @@ class SalesOrderExtractor extends SheetData {
         color = this.color
         style = this.globalStyle;
         sku = `${style}_${size}`;
-        qty = row[this.indices.ttlUnits];
-        store = row[this.indices.store];
+        qty = row[ind.ttlUnits];
+        store = row[ind.store];
         po = this.metadata.masterPo;
         rate = this.globalRate;
         lineDetails = { style, size, upc, sku, qty,
@@ -243,12 +245,12 @@ class SalesOrderExtractor extends SheetData {
           shipTo2, address, city, state, zip, styleName, color }
         break;
       case 'Von Maur':
-        store = row[this.indices.buyerStoreNo]
+        store = row[ind.buyerStoreNo]
         po = `${this.metadata.masterPo}-${store}`
-        qty = row[this.indices.qtyOrdered]
-        upc = row[this.indices.productCode]
-        rate = row[this.indices.unitPrice]
-        sku = lookupBarcode(upc, this.cachedSkus) || row[this.indices.productCode2]
+        qty = row[ind.qtyOrdered]
+        upc = row[ind.productCode]
+        rate = row[ind.unitPrice]
+        sku = lookupBarcode(upc, this.cachedSkus) || row[ind.productCode2]
         lineDetails = { style, size, upc, sku, qty,
           rate, store, po, shipTo1,
           shipTo2, address, city, state, zip }

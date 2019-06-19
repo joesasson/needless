@@ -18,6 +18,7 @@ function onOpen(e){
       .addItem("Generate Packing Slip", "generatePackingSlip")
       .addItem("Generate Picklist", "generatePicklist")
       .addItem("Extract Selected Columns", "extractSelectedColumns")
+      .addItem("Add To Shipping Control", 'addToShippingControl')
     )
     .addSubMenu(SpreadsheetApp.getUi().createMenu('Shopify')
       .addItem("Extract Shopify Invoice and Credit Details", "extractShopifyInvoice")

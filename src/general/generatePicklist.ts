@@ -17,8 +17,8 @@ function generatePicklist() {
     newData = generateMultistorePicklist(wrapped, customer, stores);
   } else {
     newData = generateSimplePicklist(wrapped);
-    let total = wrapped.getTotalQty(newData);
-    newData[7][1] = total;
+    // let total = wrapped.getTotalQty(newData);
+    // newData[7][1] = total;
   }
 
   let newSheet = createNewSheetWithData(ss, newData, `${customer} - Picklist`);
