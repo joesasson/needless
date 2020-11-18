@@ -29,11 +29,15 @@ Visit link above for instructions on running this scaffold thorugh yeoman.
 - Remove 0 phone numbers
 - Generate a Tracking Tab automatically
 
-
+ 
 ### 1-14-19
 
 - Added support for po's with multiple line items in a Nordstrom Rack Order
 - Modified the Invoice Generator for Nordstrom to include an dsco id, and empty columns for tracking and invoice #s
+
+### 11-18-20
+
+- Testing workflow
 
 
 This Add-on aims to eliminate needless work from many of the data entry processes that take place at Marc Joseph New York.
