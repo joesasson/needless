@@ -133,7 +133,7 @@ export function showModal(message, title){
   SpreadsheetApp.getUi().showModalDialog(html, title)
 }
 
-export const mapHeaders = data => {
+const mapHeaders = data => {
   let headers = data[0];
   let headerMap = headers.map((header, i) => {
     let camelizedHeader = camelize(header);

@@ -1,12 +1,46 @@
+import { reduceHeaders } from "../utils";
+
 function sendDataToDsco() {
+  function getRetailerId(){
+    const ss = SpreadsheetApp.getActiveSpreadsheet() || SpreadsheetApp.openByUrl(testUrl)
+    const orderSheet = ss.getSheetByName("Invoice Import")
+    const orderData = orderSheet.getDataRange().getValues()
+    // Get the column index from header
+    const { dscoRetailerId } = reduceHeaders(orderData)
+    return orderData[1][dscoRetailerId]
+  }
+
+  var dscoRetailerId = getRetailerId()
+  // Retailer ID
+  // Nordstrom = 1000003564;
+  // nrhl = 1000006153
+  var dscoSupplierId = 1000012883
+
+  const makeRequests = (endpoint, payload) => {
+    if(dscoRetailerId == 1000006153){
+      const key = dscoApiKeyNrhl();
+    } else {
+      const key = dscoApiKey();
+    }
+    let options = {
+      'method': 'post',
+      'contentType': 'application/json',
+      'headers': { Authorization: key },
+      'payload': JSON.stringify(payload),
+      'muteHttpExceptions': true
+    }
+     // Make requests
+    let preview = UrlFetchApp.getRequest(endpoint, options)
+    let res = UrlFetchApp.fetch(endpoint, options)
+    return res
+  }
+
   // get items in the "Update dsco" sheet
   const testUrl = TEST_URL
   const ss = SpreadsheetApp.getActiveSpreadsheet() || SpreadsheetApp.openByUrl(testUrl)
   const sheet = ss.getSheetByName("Invoice Import")
   const sheetData = sheet.getDataRange().getValues()
   // send request for each one to the dsco api using the key and constants
-  const dscoRetailerId = 1000003564;
-  const dscoSupplierId = 1000005017;
   let responses = [["Shipping Status", "Invoice Status"]]
   // get indices
   const {
@@ -58,7 +92,8 @@ function sendDataToDsco() {
             "trackingNumber": trackingNum,
             "shipMethod": shipMethod,
             "shipCarrier": "UPS",
-            "items": items
+            "items": items,
+            "warehouseCode": "WH1"
           }
         ]
       }
@@ -119,20 +154,7 @@ function sendDataToDsco() {
   }) 
   const target = sheet.getRange(1, 16, responses.length, responses[0].length)
   target.setValues(responses)
+
+  
 }
         
-const makeRequests = (endpoint, payload) => {
-  const key = dscoApiKey()
-  let options = {
-    'method': 'post',
-    'contentType': 'application/json',
-    'headers': { Authorization: key },
-    'payload': JSON.stringify(payload),
-    'muteHttpExceptions': true
-  }
-   // Make requests
-  let preview = UrlFetchApp.getRequest(endpoint, options)
-  Logger.log({preview})
-  let res = UrlFetchApp.fetch(endpoint, options)
-  return res
-}
