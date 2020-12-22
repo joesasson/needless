@@ -102,12 +102,14 @@ function generateSimplePicklist(wrapped) {
   let { customer } = order
   let metadata = wrapped.addMetaDetails();
   
-  if (customer.name === "BLOOMINGDALES") {
+  if (customer.name === "BLOOMINGDALES" || customer.name == "Macy's") {
     let selectedFields = ["po", "sku", "upc", "qty"];
     let addedFields = ["In Stock"];
     let headers = [...selectedFields, ...addedFields];
-    let picklist = order.lineItems.map((row, i) =>
-      selectedFields.map(field => row[field])
+    let picklist = order.lineItems.map((row, i) =>{
+      return selectedFields.map(field => row[field])
+    }
+      
     );
     picklist = [headers, ...picklist];
     return picklist

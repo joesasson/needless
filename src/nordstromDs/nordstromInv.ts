@@ -20,7 +20,7 @@ function nordstromInv() {
     const rowNumber = i + 1 // to offset 0 index in formulas
     const nextRowNumber = rowNumber + 1
     const previousRowNumber = i
-    const trackingFormula = `=INDEX(Tracking!E:E, MATCH(B${rowNumber}, Tracking!AL:AL, 0))`
+    const trackingFormula = `=INDEX(Tracking!E:E, MATCH(B${rowNumber}, Tracking!AM:AM, 0))`
     const invoiceFormula = `=IF(B${rowNumber}=B${previousRowNumber},O${previousRowNumber}, O${previousRowNumber}+1)`
     let tracking
     let invoice

@@ -45,11 +45,13 @@ const customerProfiles = {
       po: 'po',
       qty: 'qty',
       rate: 'unitPrice',
-      shipTo1: null,
-      shipTo2: null,
-      city: null,
-      state: null,
-      zip: null,
+      shipToName: "shipToName",
+      shipTo1: "shipToAddress1",
+      shipTo2: "shipToAddress2",
+      shipToCity: "shipToCity",
+      shipToState: "shipToState",
+      shipToZip: "shipToZipcode",
+      shipToPhone: "contactTel"
     }
   },
   "Bloomingdales Outlet": {
@@ -61,6 +63,7 @@ const customerProfiles = {
       po: 'poNumber',
       qty: 'qtyOrdered',
       rate: 'unitPrice',
+      shipToName: null,
       shipTo1: null,
       shipTo2: null,
       city: null,
@@ -101,6 +104,23 @@ const customerProfiles = {
       zip: null
     }
   },
+  "Macy's": {
+    name: "Macy's",
+    fieldMap: {
+      sku: null,
+      upc: 'productCode',
+      po: 'po',
+      qty: 'qty',
+      rate: 'unitPrice',
+      shipToName: "shipToName",
+      shipTo1: "shipToAddress1",
+      shipTo2: "shipToAddress2",
+      shipToCity: "shipToCity",
+      shipToState: "shipToState",
+      shipToZip: "shipToZipcode",
+      shipToPhone: "contactTel"
+    }
+  }
 }
 
 class Order {
@@ -137,18 +157,35 @@ class Order {
       const upc = row[ind[fieldMap['upc']]];
       const masterPo = row[ind[fieldMap['po']]]
       const store = row[ind[fieldMap['store']]]
-      const itemDetails = {
-        po: store ? `${masterPo}-${store}` : masterPo, 
-        upc,
-        sku: lookupBarcode(upc, this.cachedSkus),
-        qty: row[ind[fieldMap['qty']]],
-        rate: row[ind[fieldMap['rate']]],
-        shipTo1: row[ind.partyName],
-        shipTo2: row[ind.partyAddress1],
-        city: row[ind.partyCity],
-        state: row[ind.partyState],
-        zip: row[ind.partyZipcode]
-      };
+      let itemDetails
+      if(this.customer.name == "BLOOMINGDALES"){
+        itemDetails = {
+          po: store ? `${masterPo}-${store}` : masterPo, 
+          upc,
+          sku: lookupBarcode(upc, this.cachedSkus),
+          qty: row[ind.qty],
+          rate: row[ind[fieldMap['rate']]],
+          shipTo1: row[ind.partyName],
+          shipTo2: row[ind.partyAddress1],
+          city: row[ind.partyCity],
+          state: row[ind.partyState],
+          zip: row[ind.partyZipcode]
+        } 
+      } else if(this.customer.name == "Macy's"){
+          itemDetails = {
+            po: row[ind[fieldMap['po']]], 
+            upc,
+            sku: lookupBarcode(upc, this.cachedSkus),
+            qty: row[ind[fieldMap['qty']]],
+            rate: row[ind[fieldMap['rate']]],
+            shipTo1: row[ind[fieldMap['shipToAddress1']]],
+            shipTo2: row[ind[fieldMap['shipToAddress2']]],
+            city: row[ind[fieldMap['shipToCity']]],
+            state: row[ind[fieldMap['shipToState']]],
+            zip: row[ind[fieldMap['shipToZip']]]
+          }
+        }
+      
       return new LineItem(itemDetails);
     });
   }
@@ -326,10 +363,6 @@ function createCustomer(customerName, customerProfiles){
 // This will be the actual config data, I will work on moving it 
 // outside the code
 
-
-
-
-
 class Extractor {
   data: any[][]
   content: any[][]
@@ -446,7 +479,10 @@ class SheetData {
     const firstCell: String = this.data[0][0]
 		if(this.data[1][50] === "Bloomingdales Outlet"){
 			return this.customer = "Bloomingdales Outlet"
-		}
+    }
+    if(this.data[0][1] == "Column 2"){
+      return this.customer = "Macy's"
+    }
     switch(firstCell){
       case "Trans Control #":
         this.customer = "BLOOMINGDALES"

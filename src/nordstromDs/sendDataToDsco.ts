@@ -3,10 +3,10 @@ import { reduceHeaders } from "../utils";
 function sendDataToDsco() {
   function getRetailerId(){
     const ss = SpreadsheetApp.getActiveSpreadsheet() || SpreadsheetApp.openByUrl(testUrl)
-    const orderSheet = ss.getSheetByName("Invoice Import")
+    const orderSheet = ss.getSheetByName("Dsco_Order")
     const orderData = orderSheet.getDataRange().getValues()
     // Get the column index from header
-    const { dscoRetailerId } = reduceHeaders(orderData)
+    const { dsco_retailer_id: dscoRetailerId } = reduceHeaders(orderData)
     return orderData[1][dscoRetailerId]
   }
 

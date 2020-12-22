@@ -9,20 +9,21 @@ function generateUpsBatch(){
   const { ss, sheetData } = getSheetData()
   let extractor = new SalesOrderExtractor(sheetData)
   let order = new Order(extractor)
+  const fm = order.customer.fieldMap
   // Will read user input in the In Stock column and add to the order object
 	order.addFulfillmentData()
   let newData = extractor.content.map((row, i, self) => {
 		const ind = extractor.indices
 		const qty = order.fulfillmentData.items[i].qtyFulfilled
     const firstCol = " "
-    const fullName = row[ind.partyName]
+    const fullName = row[ind[fm["shipToName"]]]
     const country = "US"
-    const shipTo1 = row[ind.partyAddress1]
-    const shipTo2 = row[ind.partyAddress2] || ""
-    const city = row[ind.partyCity]
-    const state = row[ind.partyState]
-    const zip = row[ind.partyZipcode]
-    const phone = row[ind.contactTel]
+    const shipTo1 = row[ind[fm["shipTo1"]]]
+    const shipTo2 = row[ind[fm["shipTo2"]]] || ""
+    const city = row[ind[fm["shipToCity"]]]
+    const state = row[ind[fm["shipToState"]]]
+    const zip = row[ind[fm["shipToZip"]]]
+    const phone = row[ind[fm["shipToPhone"]]] 
     const po = row[ind.po]
     // if we're on the last line return undefined, otherwise po at next index
     const nextPo = self.length === (i + 1) ? undefined : self[i + 1][ind.po]

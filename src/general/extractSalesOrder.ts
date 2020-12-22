@@ -3,7 +3,6 @@ import { SheetData } from '../Amodels'
 
 function extractSalesOrder() {
   let { ss, sheetData } = getSheetData(); 
-  // Logger.log({ sheetData })
   const extractorWrapper = new SalesOrderExtractor(sheetData); 
   
   const newData = generateSalesOrder(extractorWrapper);
@@ -105,6 +104,13 @@ class SalesOrderExtractor extends SheetData {
     let metadata = { masterPo, ship_date, cancel_date, carrier, date }
     const ind = this.indices
     switch (this.customer) {
+      case "Macy's":
+        metadata.masterPo = this.data[1][ind.po]
+        metadata.ship_date = this.data[1][ind.requestShipDate]
+        metadata.cancel_date = this.data[1][ind.cancelAfter]
+        metadata.carrier = 'UPS'
+        this.metadata = metadata
+        break
       case 'Bloomingdales Outlet':
         metadata.masterPo = topDataRow[ind.poNo]
         metadata.ship_date = topDataRow[ind.doNotDeliverBeforeIndcDate]
@@ -158,6 +164,24 @@ class SalesOrderExtractor extends SheetData {
         title, productCode2, lineDetails, tracking, invoice
     let ind = this.indices
     switch (this.customer) {
+      case "Macy's":
+          po = row[ind.po]
+          upc = row[ind.productCode]
+          sku = lookupBarcode(upc, this.cachedSkus)
+          rate = row[ind.unitPrice]
+          qty = row[ind.qty]
+          title = 'not available'
+          shipTo1 = row[ind.shipToAddress1]
+          shipTo2 = row[ind.shipToAddress2]
+          city = row[ind.shipToCity]
+          state = row[ind.shipToState]
+          zip = row[ind.shipToZipcode]
+          tracking = `=INDEX(Tracking!E:E, MATCH(E${currentRow}, Tracking!AL:AL, 0))`
+          invoice = `=IF(E${currentRow}=E${previousRow}, Q${previousRow}, Q${previousRow}+1)`
+          lineDetails = { style, size, upc, sku, qty,
+          rate, store, po, shipTo1,
+          shipTo2, address, city, state, zip, title, tracking, invoice } 
+      break;
       case "Bloomingdales Outlet":
         store = row[ind.storeNo]
         po = `${this.metadata.masterPo}-${store}`
