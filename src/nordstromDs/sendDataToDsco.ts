@@ -1,9 +1,10 @@
+// Account number from response - 1000005017
 import { reduceHeaders } from "../utils";
 
 function sendDataToDsco() {
   function getRetailerId(){
     const ss = SpreadsheetApp.getActiveSpreadsheet() || SpreadsheetApp.openByUrl(testUrl)
-    const orderSheet = ss.getSheetByName("Dsco_Order")
+    var orderSheet = ss.getSheets()[0];
     const orderData = orderSheet.getDataRange().getValues()
     // Get the column index from header
     const { dsco_retailer_id: dscoRetailerId } = reduceHeaders(orderData)
@@ -15,7 +16,6 @@ function sendDataToDsco() {
   // Nordstrom = 1000003564;
   // nrhl = 1000006153
   var dscoSupplierId = 1000012883
-
   const makeRequests = (endpoint, payload) => {
     if(dscoRetailerId == 1000006153){
       const key = dscoApiKeyNrhl();
@@ -107,7 +107,7 @@ function sendDataToDsco() {
 })
 
   let lineItems = []
-  let lineNumber = 1
+  let lineNumber = 0 // Changed from 1
   let totalAmount = 0
   // Update Invoice
   sheetData.forEach((row, i, self) => {
@@ -124,9 +124,8 @@ function sendDataToDsco() {
         "sku": sku,
         "quantity": quantity,
         "unitPrice": unitPrice,
-        "lineNumber": lineNumber
+        "lineNumber": ++lineNumber // changed from incrementing on next line
       })
-      lineNumber++
       totalAmount += unitPrice
       responses.push(["", ""])
     } else {
