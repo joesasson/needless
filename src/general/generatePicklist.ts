@@ -182,6 +182,9 @@ const collectQtys = (sheetData, customer) => {
       const store = row[storeNo]
       const upc = row[productCode]
       let sku = lookupBarcode(upc, cachedSkus)
+      if(!sku){
+        throw("Sku not found")
+      }
       const qty = row[qtyI]
       const rowKey = `${sku}@${store}`
       return {...qtys, [rowKey]: qty }
