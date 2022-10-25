@@ -19,6 +19,7 @@ function onOpen(e){
       .addItem("Generate Picklist", "generatePicklist")
       .addItem("Extract Selected Columns", "extractSelectedColumns")
       .addItem("Add To Shipping Control", 'addToShippingControl')
+      .addItem("Generate PO from Style List", 'generatePOFromStyleList')
     )
     .addSubMenu(SpreadsheetApp.getUi().createMenu('Shopify')
       .addItem("Extract Shopify Invoice and Credit Details", "extractShopifyInvoice")

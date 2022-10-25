@@ -1,21 +1,14 @@
 // Account number from response - 1000005017
 import { reduceHeaders } from "../utils";
 
-function sendDataToDsco() {
-  function getRetailerId(){
-    const ss = SpreadsheetApp.getActiveSpreadsheet() || SpreadsheetApp.openByUrl(testUrl)
-    var orderSheet = ss.getSheets()[0];
-    const orderData = orderSheet.getDataRange().getValues()
-    // Get the column index from header
-    const { dsco_retailer_id: dscoRetailerId } = reduceHeaders(orderData)
-    return orderData[1][dscoRetailerId]
-  }
+const testUrl = TEST_URL
 
+function sendDataToDsco() {
   var dscoRetailerId = getRetailerId()
   // Retailer ID
   // Nordstrom = 1000003564;
   // nrhl = 1000006153
-  var dscoSupplierId = 1000012883
+  const dscoSupplierId = 1000012883
   const makeRequests = (endpoint, payload) => {
     if(dscoRetailerId == 1000006153){
       const key = dscoApiKeyNrhl();
@@ -36,7 +29,7 @@ function sendDataToDsco() {
   }
 
   // get items in the "Update dsco" sheet
-  const testUrl = TEST_URL
+  
   const ss = SpreadsheetApp.getActiveSpreadsheet() || SpreadsheetApp.openByUrl(testUrl)
   const sheet = ss.getSheetByName("Invoice Import")
   const sheetData = sheet.getDataRange().getValues()
@@ -86,18 +79,20 @@ function sendDataToDsco() {
       let shippingPayload = {
         "dscoRetailerId": dscoRetailerId,
         "dscoSupplierId": dscoSupplierId,
-        "poNumber": po,
-        "packages": [
+        "dscoOrderId": String(dsco_id),
+        "poNumber": String(po),
+        "shipments": [
           {
             "trackingNumber": trackingNum,
             "shipMethod": shipMethod,
             "shipCarrier": "UPS",
-            "items": items,
+            "lineItems": items,
             "warehouseCode": "WH1"
           }
         ]
       }
-      const shippingEndpoint = `https://apis.dsco.io/api/v2/order/${dsco_id}/shipment`
+      // const shippingEndpoint = `https://apis.dsco.io/api/v3/order/${dsco_id}/shipment`
+      const shippingEndpoint = "https://api.dsco.io/api/v3/order/singleShipment"
       // Make requests and add responses
       let res = makeRequests(shippingEndpoint, shippingPayload)
       responses.push([res, ""])
@@ -136,13 +131,14 @@ function sendDataToDsco() {
         "lineNumber": ++lineNumber
       })
       totalAmount += unitPrice 
-      let invoicePayload = {
+      let invoicePayload = [{
         "invoiceId" : invoiceId,
         "poNumber" : poNumber, 
         "totalAmount" : totalAmount,
         "lineItems" : lineItems
-      }
-      const invoiceEndpoint = `https://apis.dsco.io/api/v2/invoice`
+      }]
+      // const invoiceEndpoint = `https://apis.dsco.io/api/v3/invoice`
+      const invoiceEndpoint = "https://api.dsco.io/api/v3/invoice/batch/small"
   
       let res = makeRequests(invoiceEndpoint, invoicePayload)
       responses[i][1] = res
@@ -155,5 +151,14 @@ function sendDataToDsco() {
   target.setValues(responses)
 
   
+}
+
+function getRetailerId(){
+  const ss = SpreadsheetApp.getActiveSpreadsheet() || SpreadsheetApp.openByUrl(testUrl)
+  var orderSheet = ss.getSheets()[0];
+  const orderData = orderSheet.getDataRange().getValues()
+  // Get the column index from header
+  const { dsco_retailer_id: dscoRetailerId } = reduceHeaders(orderData)
+  return orderData[1][dscoRetailerId]
 }
         
